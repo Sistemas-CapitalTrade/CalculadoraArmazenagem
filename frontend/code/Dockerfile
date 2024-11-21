@@ -16,9 +16,7 @@ COPY . .
 # 6. Se o Next.js estiver configurado para rodar em produção, construa a aplicação
 RUN npm run build
 
-# 8. Exponha a porta na qual a aplicação vai rodar
 EXPOSE 3001
 
 # 9. Comando para rodar a aplicação Next.js
 CMD ["npm", "start"]
-

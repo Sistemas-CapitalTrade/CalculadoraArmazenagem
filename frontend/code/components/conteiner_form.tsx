@@ -8,17 +8,25 @@ import Checkbox from "./form_field/checkbox";
 import { DefaultGetFetch, fetchInputForm } from "../data/model_fetch";
 import { format } from "date-fns";
 import { Conteiner,InputLabelForm } from "@/data/types";
+import { Loader2 } from "lucide-react";
+import { Button } from "./ui/button";
+import LoadingWindow from "./ui/loading";
+import ErrorWindow from "./ui/error";
 
-  
+type FormProp = {
+  returnRecinto : (recinto_name : string) => void 
+}  
 
-export default function Form() {
+export default function Form({
+  returnRecinto
+} : FormProp) {
 
   const [conteinerId, setConteinerId] = useState(0)
   const [sequence, setSequence] = useState(0)
   const [recinto, setRecinto] = useState<any>()
   const [tipo_mercadoria,setTipoMercadoria] = useState<string>  ()
-  const [cod_ext,setCodExt] = useState<string>  ()
-  const [CIF, setCIF] = useState()
+  const [ref_ext,setCodExt] = useState<string>  ()
+  const [CIF, setCIF] = useState<number>()
   const [conteinerList,setConteinerList] = useState<Conteiner[]>([])
   const [custoObrigatorio, setCustoObrigatorio] = useState<InputLabelForm[]>([])
   const [custoObrigatorioMarcado, setCustoObrigatorioMarcado] = useState<InputLabelForm[]>([])
@@ -38,6 +46,21 @@ export default function Form() {
   const [servicosCalculados,setServicosCalculados] = useState<{[key : string] : number}>({})
   const [valorEnergia,setValorEnergia] = useState<number>(0)
   const [valorTotal,setValorTotal] = useState<number>(0)
+  const [isLoadingSubmit,setIsLoadingSubmit] = useState<boolean>(false)
+  const [buildRepportError,setBuildRepportError] = useState<boolean>(false)
+  const [repportGenerated,setRepportGenerated] = useState<boolean>(false)
+  /*const [tabelaNegociada,setTabelaNegociada] = useState<InputLabelForm>({
+    id : "tabela_negociada",
+    label :  "Tabela Negociada"
+  })
+  const [tabelaPublica,setTabelaPublica] = useState<boolean>(false)
+  */
+  const [isLoadingSearch, setIsLoadingSearch] = useState<boolean>(false)
+  const [isErrorSearch, setIsErrorSearch] = useState<boolean>(false)
+  
+
+  
+  const refToValuesCalculated = useRef<HTMLDivElement | null>(null)
 
   const API_URL = process.env.NEXT_PUBLIC_API_URL
   const API_PORT = process.env.NEXT_PUBLIC_API_PORT
@@ -51,9 +74,9 @@ export default function Form() {
   })
 
   useLayoutEffect( ()=> {
-    fetchInputForm(`${API_URL}:${API_PORT}/recintos/name`)
-    .then(list => {
-      setRecintoList(() => list)
+    fetchInputForm(`${API_URL}:${API_PORT}/recintos/infos`)
+    .then(recintoInfo => {
+      setRecintoList(() => recintoInfo)
       }
     ) 
     .catch(err => {
@@ -108,6 +131,7 @@ export default function Form() {
 
     const conteiner : Conteiner = {
       id : currentId,
+      numero: "",
       sequence : currentSequence,
       tipo_conteiner : "",
       entrada : null,
@@ -132,6 +156,7 @@ export default function Form() {
 
     const conteiner : Conteiner = {
       id : currentId,
+      numero: "",
       sequence : currentSequence,
       tipo_conteiner : copy_conteiner.tipo_conteiner,
       entrada : copy_conteiner.entrada,
@@ -144,16 +169,13 @@ export default function Form() {
     setConteinerList(prevConteinerList => [...prevConteinerList, conteiner]); // Use functional form of setState
   }
 
-
   function refreshConteiners(refresh_conteiner : Conteiner) {
     setConteinerList(prevConteinerList => {
       const conteinerListCopy = [...prevConteinerList];
       const conteinerIndex = conteinerListCopy.findIndex(conteiner => conteiner.id === refresh_conteiner.id);
-      
       if (conteinerIndex !== -1) {
         conteinerListCopy[conteinerIndex] = refresh_conteiner;
       }
-  
       return conteinerListCopy;
     });
   }
@@ -200,6 +222,7 @@ export default function Form() {
   }
 
   function handleRecintoSelection(valor:any) {
+    console.log(valor)
     setRecinto(() => valor)
 
     if(valor == ''){
@@ -210,11 +233,11 @@ export default function Form() {
       setCustoObrigatorioMarcado(() => [])
       return 
     }
-
+    returnRecinto(valor)
     setConteinerList([])
     DefaultGetFetch(`${API_URL}:${API_PORT}/recintos/${valor}/periodo`)
     .then(object => {
-      setPeriodosRecinto(() => object.armazem)
+      setPeriodosRecinto(() => object)
       }
     )  
     .catch(err => {
@@ -254,7 +277,7 @@ export default function Form() {
 
     // Check required fields
     if (!recinto) newFormErrors.recinto = true;
-    if (!cod_ext) newFormErrors.cod_ext = true;
+    if (!ref_ext) newFormErrors.ref_ext = true;
     if (!tipo_mercadoria) newFormErrors.tipo_mercadoria = true;
     if (!CIF) newFormErrors.CIF = true;
 
@@ -275,10 +298,12 @@ export default function Form() {
     setConteinerList(conteinerListCopy)
     console.log(newFormErrors)
     if (Object.keys(newFormErrors).length !== 0 || conteinerListCopy.length == 0 || conteinerListCopy.filter(conteiner => conteiner.entrada_error || conteiner.saida_error || conteiner.tipo_conteiner_error).length != 0) {
-
       return
     }
-      
+    // Marcar que o relatório está sendo gerado
+    setIsLoadingSubmit(true)
+    setBuildRepportError(false)
+    
     const conteinerSendData = conteinerListCopy.map(conteiner => (
       {
         id : conteiner.id,
@@ -295,13 +320,12 @@ export default function Form() {
       // Prepare the data to be sent
       const dataToSend = {
         recinto : recinto,
-        ref_ext : cod_ext,
+        ref_ext : ref_ext,
         tipo_mercadoria : tipo_mercadoria,
         cif : CIF,
         custos_obrigatorios : custoObrigatorioMarcado.map(value => value.id),
         conteineres : conteinerSendData
     };
-
 
     // Send the data to the backend
     fetch(`${API_URL}:${API_PORT}/calc`, {
@@ -312,6 +336,8 @@ export default function Form() {
         body: JSON.stringify(dataToSend),
     })
     .then(response => {
+
+
       console.log(response)
       if (!response.ok) {
         return response.json().then(errData => {
@@ -321,20 +347,32 @@ export default function Form() {
       return response.json();
     })
     .then(data => {
-        console.log('Success:', data);
 
-        const calcServicos = data.valorServicos
+      // Marcar que o relatório está sendo gerado
+      setIsLoadingSubmit(false)
+      setRepportGenerated(true)
+      setBuildRepportError(false)
+      console.log('Success:', data);
 
-        const valorServicosTotal : number = Number(Object.values(calcServicos).reduce((current, sum) => Number(current) + Number(sum), 0)) 
+      const calcServicos = data.valorServicos
 
-        setValorArmazenagem(data.valorArmazenagem)
-        setValorLevante(data.valorLevante)
-        setServicosCalculados(calcServicos)
-        setValorServicos(valorServicosTotal)
-        setValorEnergia(data.valorEnergia)
-        setValorTotal(data.valorEnergia + valorServicosTotal + data.valorLevante + data.valorArmazenagem)
+      const valorServicosTotal : number = Number(Object.values(calcServicos).reduce((current, sum) => Number(current) + Number(sum), 0)) 
+
+      setValorArmazenagem(data.valorArmazenagem)
+      setValorLevante(data.valorLevante)
+      setServicosCalculados(calcServicos)
+      setValorServicos(valorServicosTotal)
+      setValorEnergia(data.valorEnergia)
+      setValorTotal(data.valorEnergia + valorServicosTotal + data.valorLevante + data.valorArmazenagem)
+      refToValuesCalculated.current?.scrollIntoView({
+        behavior: 'smooth'
+      }) 
     })
     .catch(error => {
+      // Marcar que o relatório está sendo gerado
+      setIsLoadingSubmit(false)
+      setBuildRepportError(true)
+      setRepportGenerated(false)
       console.error('Error:', error.message);
 
         // Handle error (e.g., show an error message)
@@ -345,87 +383,210 @@ export default function Form() {
     setCodExt( () => valor)
   }
 
+  function searchRefExt(){
+    // Mostrar tela de carregando
+    setIsLoadingSearch(true)
+    fetch(`${API_URL}:${API_PORT}/refExt/${ref_ext?.replaceAll("/","")}`)
+    .then( result => {
+      if (!result.ok) 
+      {
+        return result.json().then(errData => {
+          throw new Error(errData.error || 'Unknown error occurred');
+        });
+      }
+      return result.json()
+    })
+    .then(data => {
+      setIsLoadingSearch(false)
+      console.log(data)
+      const processo = recintoList.filter(x => x.id == data.RECINTO_COD).at(0)
+      if(processo){
+        handleRecintoSelection(processo.label)
+        setCIF(() => {
+          return data.VALOR_CIF
+        })
+
+        setTipoMercadoria( () => {
+          return data.TIPO_MERCADORIA
+        })
+
+        const conteinersData = JSON.parse(data.CONTAINERES)
+        setSequence(conteinersData.length - 1)
+        setConteinerList( () => {
+          return conteinersData.map((x : any,index : number) => {
+
+            return {
+              
+              id : x.num_container,
+              numero : x.num_container,
+              sequence : index,
+              tipo_conteiner : x.tipo_container,
+              entrada : null,
+              saida : null,
+              periodo : "",
+              servicos : []
+            }
+          })
+        })
+      }
+      else{
+        console.log("REF_EXT NÃO ENCONTRADO")
+      }
+
+    })
+    .catch( (err) => {
+      setIsLoadingSearch(false)
+      setIsErrorSearch(true)
+
+      console.error(err)
+
+    })
+  }
+
+
+  const searchRefExtButton = () => {
+    return (
+      <Button
+        type="button"
+        onClick={searchRefExt}
+        className="w-24 h-full bg-orange-700 bg-opacity-80 hover:bg-opacity-60 transition-opacity"
+      >
+        <span className="text-md font-inter font-semibold">Pesquisar</span>
+
+      </Button>
+    )
+  }
+
+//<Checkbox input={} returnValue={} />
+
   return (
     <form id="form_calc" action={''} method="post" className="w-full">
-        <div className="flex justify-between">
-          <div className="grid gap-4 h-min w-3/5 grid-cols-2 mt-12">
-            <div className="col-span-2">
+      {isLoadingSearch && <LoadingWindow />}
+      {isErrorSearch && <ErrorWindow message="Erro ao procurar a Referência Externa da DI, verifique se os dados estão corretos." onContinue={() => setIsErrorSearch(false)} />}
+      <div className="flex justify-between">
+        <div className="grid gap-4 h-min w-3/5 grid-cols-2 mt-12">
+          
+          <div className="col-span-2">
 
-              <label htmlFor="recinto" className="block text-lg font-inter font-light">Recinto</label>
-              <Combobox ref={recintoRef} error={formErrors.recinto} selectValue={handleRecintoSelection} list={recintoList} emptyField="Nenhum recinto selecionado" placeholder="Selecione um recinto"></Combobox>
-              
-            </div>
-            <InputForm ref={codExtRef} error={formErrors.cod_ext} selectValue={getCodExt} field = "cod_ext" name = "Referência Externa"/>
-            
-            <CurrencyInput ref={cifRef} error={formErrors.CIF} returnValorCIF={getCIF}/>  
-            
-            <div className="col-span-2">
+            <InputForm ref={codExtRef} error={formErrors.ref_ext} selectValue={getCodExt} field = "ref_ext" name = "Referência Externa" trailingIcon={searchRefExtButton()}/>
+          
+          </div>
+{/*             
+            <div className="">
 
-              <label htmlFor="tipo_mercadoria" className="block text-lg font-inter font-light">Tipo de mercadoria</label>
+              <InputForm ref={codExtRef} error={formErrors.ref_ext} selectValue={getCodExt} field = "ref_ext" name = "Referência Externa" trailingIcon={searchRefExtButton()}/>
               
-              <Combobox ref={tipoMercadoriaRef} error={formErrors.tipo_mercadoria} selectValue={setTipoMercadoria} list={tipoMercadoriaList} emptyField="Nenhum tipo de mercadoria selecionado" placeholder="Selecione um tipo de mercadoria"></Combobox>
-              
-            </div>
+            </div> */}
+
+          <div className="mt-2">
+
+            <label htmlFor="recinto" className="block text-lg font-inter font-light">Recinto</label>
+            <Combobox initialValue={recinto} ref={recintoRef} error={formErrors.recinto} selectValue={handleRecintoSelection} list={recintoList} emptyField="Nenhum recinto selecionado" placeholder="Selecione um recinto"></Combobox>
+            
           </div>
 
-          <div className="relative h-92 p-4 w-2/6 mt-12 mx-auto bg-gray-900 bg-opacity-60 rounded-2xl">
+          <CurrencyInput initialValue={CIF} ref={cifRef} error={formErrors.CIF} returnValorCIF={getCIF}/>  
           
-            <h1 className="font-semibold font-inter text-lg w-min mx-auto">Simulação</h1>
+          <div className="col-span-2 mt-2">
+
+            <label htmlFor="tipo_mercadoria" className="block text-lg font-inter font-light">Tipo de mercadoria</label>
             
-            <h2 className="font-inter mt-4 font-regular text-md">Serviços extras: <span id="services" className="font-semibold">{realFormatter.format(valorServicos)}</span></h2>
-            {
-              Object.entries(servicosCalculados).map(([keyServico,valueServico])  =>            
-                <h2 key={keyServico} className="ml-2 font-inter mt-4 font-regular text-md">{keyServico}: <span id="services" className="font-semibold">{realFormatter.format(valueServico)}</span></h2>
-              )
-            }
-            <h2 className="font-inter mt-2 font-regular text-md">Levante: <span id="levante" className="font-semibold">{realFormatter.format(valorLevante)}</span></h2>
-            <h2 className="font-inter mt-2 font-regular text-md">Armazenagem: <span id="armazenagem" className="font-semibold">{realFormatter.format(valorArmazenagem)}</span></h2>
-            {
-            valorEnergia > 0 
-            ? <h2 id="energia"className="font-inter mt-2 font-regular text-md">Energia: <span id="energia_valor" className="font-semibold">{realFormatter.format(valorEnergia)}</span></h2> 
-            : null}
-            <h2 className="relative mt-10 font-inter  font-regular text-md">Total de Custos: <span id="total_custos" className="font-semibold">{realFormatter.format(valorTotal)}</span></h2>
-
-
+            <Combobox initialValue={tipo_mercadoria} ref={tipoMercadoriaRef} error={formErrors.tipo_mercadoria} selectValue={setTipoMercadoria} list={tipoMercadoriaList} emptyField="Nenhum tipo de mercadoria selecionado" placeholder="Selecione um tipo de mercadoria"></Combobox>
+            
           </div>
         </div>
 
-        <h1 className="font-inter text-xl mt-12 mx-auto w-min text-nowrap font-bold">Custos adicionais</h1>
-
-        <div id="custos_adicionais" className="grid w-full grid-cols-1 xl:grid-cols-3 mx-auto mt-12 gap-8 items-center">
-          {custoObrigatorio.map(custo => {
-              return <Checkbox key = {custo.id} input={custo} returnValue={updateCustosObrigatorios}></Checkbox>
-          })}
-        </div>
-        <div className="flex mt-12 justify-between items-center mx-auto">
-
-          <h1 className="w-min font-inter font-bold text-2xl">Conteineres</h1>
-          
-          <button type="button" onClick={() => addConteiner()} className="text-white relative text-2xl text-center p-0 h-8 w-8 border-2 border-white rounded-xl"><span className="relative text-center mb-4 p-0" >+</span></button>
+        <div ref={refToValuesCalculated} className="relative h-92 p-4 w-2/6 mt-12 mx-auto bg-gray-900 bg-opacity-60 rounded-2xl">
         
-        </div>
-
-        {formErrors.conteinerList ? <span className="text-rose-400">É necessário incluir conteineres</span> : null}
-
-        <div id="conteiners_form" className="grid gap-x-10 gap-y-4 mt-12 grid-cols-14 w-full font-inter font-semibold text-lg">
-
-          <h1 className="">Seq</h1>
-          <h1 className="col-span-3">Tipo Conteiner</h1>
-          <h1 className="col-span-3">Entrada</h1>
-          <h1 className="col-span-3">Saida</h1>
-          <h1 className="col-span-4">Período</h1>
+          <h1 className="font-semibold font-inter text-lg w-min mx-auto">Simulação</h1>
           
-          
-          {conteinerList.map(conteiner => {
-            return <ConteinerTAG key={conteiner.id} conteiner_input={conteiner} conteiner_type={tipoConteinerList} periodos={periodosRecinto} servicosList={custoConteiner} removeConteiner={removeConteiner} copyConteiner={copyConteiner} refreshConteiners={refreshConteiners}></ConteinerTAG>
-          })} 
+          <h2 className="font-inter mt-4 font-regular text-md">Serviços extras: <span id="services" className="font-semibold">{realFormatter.format(valorServicos)}</span></h2>
+          {
+            Object.entries(servicosCalculados).map(([keyServico,valueServico])  =>            
+              <h2 key={keyServico} className="ml-2 font-inter mt-4 font-regular text-md">{keyServico}: <span id="services" className="font-semibold">{realFormatter.format(valueServico)}</span></h2>
+            )
+          }
+          <h2 className="font-inter mt-2 font-regular text-md">Levante: <span id="levante" className="font-semibold">{realFormatter.format(valorLevante)}</span></h2>
+          <h2 className="font-inter mt-2 font-regular text-md">Armazenagem: <span id="armazenagem" className="font-semibold">{realFormatter.format(valorArmazenagem)}</span></h2>
+          {
+          valorEnergia > 0 
+          ? <h2 id="energia"className="font-inter mt-2 font-regular text-md">Energia: <span id="energia_valor" className="font-semibold">{realFormatter.format(valorEnergia)}</span></h2> 
+          : null}
+          <h2 className="relative mt-10 font-inter  font-regular text-md">Total de Custos: <span id="total_custos" className="font-semibold">{realFormatter.format(valorTotal)}</span></h2>
+
 
         </div>
+      </div>
 
-        <div className="mt-24 flex w-full">
-          {/* <input type="submit" className=" bg-orange-700 bg-opacity-80 hover:bg-opacity-60 transition-opacity rounded-xl text-white text-lg py-3 px-6" value="Simular"/> */}
-          <input type="button" onClick={handleSubmit} className=" bg-orange-700 bg-opacity-80 hover:bg-opacity-60 transition-opacity rounded-xl text-white text-lg py-3 px-6" value="Simular"/>
-        </div>
+      <h1 className="font-inter text-xl mt-12 mx-auto w-min text-nowrap font-bold">Custos adicionais</h1>
+
+      <div id="custos_adicionais" className="grid w-full grid-cols-1 xl:grid-cols-3 mx-auto mt-12 gap-8 items-center">
+        {custoObrigatorio.map(custo => {
+            return <Checkbox key = {custo.id} input={custo} returnValue={updateCustosObrigatorios}></Checkbox>
+        })}
+      </div>
+      <div className="flex mt-12 justify-between items-center mx-auto">
+
+        <h1 className="w-min font-inter font-bold text-2xl">Conteineres</h1>
+        
+        <button type="button" onClick={() => addConteiner()} className="text-white relative text-2xl text-center p-0 h-8 w-8 border-2 border-white rounded-xl"><span className="relative text-center mb-4 p-0" >+</span></button>
+      
+      </div>
+
+      {formErrors.conteinerList ? <span className="text-rose-400">É necessário incluir conteineres</span> : null}
+
+      <div id="conteiners_form" className="grid gap-x-10 gap-y-4 mt-12 grid-cols-14 w-full font-inter font-semibold text-lg">
+
+        <h1 className="">Seq</h1>
+        <h1 className="col-span-3">Tipo Conteiner</h1>
+        <h1 className="col-span-2">Número</h1>
+        <h1 className="col-span-2">Entrada</h1>
+        <h1 className="col-span-2">Saida</h1>
+        <h1 className="col-span-4">Período</h1>
+        
+        
+        {conteinerList.map(conteiner => {
+          return <ConteinerTAG key={conteiner.id} conteiner_input={conteiner} conteiner_type={tipoConteinerList} periodos={periodosRecinto} servicosList={custoConteiner} removeConteiner={removeConteiner} copyConteiner={copyConteiner} refreshConteiners={refreshConteiners}></ConteinerTAG>
+        })} 
+
+      </div>
+
+      <div className="mt-24 flex w-full">
+        {/* <input type="submit" className=" bg-orange-700 bg-opacity-80 hover:bg-opacity-60 transition-opacity rounded-xl text-white text-lg py-3 px-6" value="Simular"/> */}
+        <Button 
+          type="button" 
+          onClick={handleSubmit} 
+          className={` bg-orange-700 bg-opacity-80 hover:bg-opacity-60 transition-opacity rounded-xl text-white font-inter text-lg h-12 ${isLoadingSubmit ? "w-50" : "w-24"}`} 
+          >
+            {
+              isLoadingSubmit 
+              ?
+                <>
+                  <span className="h-min w-min">Carregando</span>
+                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />                
+                </>
+                :
+                  "Simular"
+            }
+            
+          </Button>
+          {
+            buildRepportError 
+            ?
+              <h1 className="ml-4 text-lg font-inter font-semibold text-rose-500">Erro ao gerar relatório. Por favor, contate a equipe de sistemas.</h1>
+            :
+            <></>
+          }
+
+          {
+            repportGenerated 
+            ?
+              <h1 className="ml-4 h-min my-auto text-lg font-inter font-semibold text-green-400">Relatório gerado com sucesso.</h1>
+            :
+            <></>
+          }
+
+      </div>
 
       <input type="hidden" name="conteiners_qtd" id="conteiners_qtd" value="{{countConteiners}}"/>
     </form>

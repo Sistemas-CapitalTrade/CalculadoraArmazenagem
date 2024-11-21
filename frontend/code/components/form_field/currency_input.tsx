@@ -1,18 +1,26 @@
 
-import { forwardRef, Ref } from "react";
+import { forwardRef, Ref, useEffect, useState } from "react";
 import { NumericFormat } from "react-number-format";
 type props = {
     returnValorCIF : (cif : any) => void,
+    initialValue? : number,
     error? : boolean
 }
 function CurrencyInput({
     returnValorCIF,
+    initialValue,
     error
 } : props, ref: Ref<HTMLInputElement>){
-    const CIF = null
+    const [CIF,setCIF] = useState<number>()
     const handleLangChange = (cif : any) => {
         returnValorCIF(cif)    
     }
+
+    useEffect( () => {
+        if(initialValue)
+            setCIF(initialValue)
+    })
+
     return (
         <div className="">
             <label className="block text-lg font-inter font-light">CIF</label>

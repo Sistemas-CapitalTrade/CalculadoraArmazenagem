@@ -4,10 +4,10 @@ type PeriodoEstrutura = {
 }
 
 type Periodos = {
-    primeiro_periodo_dia : number,
-    segundo_periodo_dia : number,
-    terceiro_periodo_dia : number,
-    quarto_periodo_dia : number,
+    primeiro_periodo_dia : number | null,
+    segundo_periodo_dia : number | null, 
+    terceiro_periodo_dia : number | null,
+    quarto_periodo_dia : number | null
 }
 
 type Panel = {
@@ -36,20 +36,20 @@ type ContainerTypesLevante = {
     "Open Top" : number
 }
 type TarifasCompositionEnergia = {
-    primeiro_periodo: number,
-    segundo_periodo: number,
-    terceiro_periodo: number,
-    quarto_periodo: number
+    primeiro_periodo: number | null,
+    segundo_periodo: number | null,
+    terceiro_periodo: number | null,
+    quarto_periodo: number | null
 }
 type TarifasCompositionArmazem = {
-    primeiro_periodo_minima: number,
-    primeiro_periodo: number,
-    segundo_periodo_minima: number,
-    segundo_periodo: number,
-    terceiro_periodo_minima: number,
-    terceiro_periodo: number,
-    quarto_periodo_minima: number,
-    quarto_periodo: number
+    primeiro_periodo_minima: number | null,
+    primeiro_periodo: number | null,
+    segundo_periodo_minima: number | null,
+    segundo_periodo: number | null,
+    terceiro_periodo_minima: number | null,
+    terceiro_periodo: number | null,
+    quarto_periodo_minima: number | null,
+    quarto_periodo: number | null
 
 }
 
@@ -65,6 +65,8 @@ type TaxaNegociada = {
 }
 
 type TaxasNegociadasEstrutura = {
+    tarifas : TarifasEstrutura,
+    periodos : PeriodoEstrutura,
     Normal : TaxaNegociada,
     IMO : TaxaNegociada,
     Oversize : TaxaNegociada,
@@ -93,12 +95,14 @@ type KeyValuePair = {
     key : string,
     label : string,
     value : any
+    isPorcentage? : boolean
 }
 
 
 type Conteiner = {
   
     id : number,
+    numero : string,
     sequence : number,
     tipo_conteiner : string,
     entrada : Date | null,

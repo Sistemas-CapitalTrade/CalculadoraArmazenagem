@@ -19,6 +19,17 @@ const defaultPeriodos : Periodos = {
     terceiro_periodo_dia : 0,
     quarto_periodo_dia : 0,
 }
+const defaultPeriodosNegociacao : Periodos = {
+    primeiro_periodo_dia : null,
+    segundo_periodo_dia : null,
+    terceiro_periodo_dia : null,
+    quarto_periodo_dia : null,
+}
+
+const defaultPeriodosEstruturaNegociacao : PeriodoEstrutura = {
+    energia : defaultPeriodosNegociacao,
+    armazem : defaultPeriodosNegociacao    
+}
 
 const defaultPeriodoEstrutura : PeriodoEstrutura = {
     energia : defaultPeriodos,
@@ -46,10 +57,37 @@ const defaultTarifasCompositionEnergia : TarifasCompositionEnergia = {
     quarto_periodo: 0
 
 }
+const defaultTarifasCompositionArmazemNegociacao : TarifasCompositionArmazem = {
+
+    primeiro_periodo_minima: null,
+    primeiro_periodo: null,
+    segundo_periodo_minima: null,
+    segundo_periodo: null,
+    terceiro_periodo_minima: null,
+    terceiro_periodo: null,
+    quarto_periodo_minima: null,
+    quarto_periodo: null
+
+}
+
+const defaultTarifasCompositionEnergiaNegociacao : TarifasCompositionEnergia = {
+
+    primeiro_periodo: null,
+    segundo_periodo: null,
+    terceiro_periodo: null,
+    quarto_periodo: null
+
+}
 
 const defaultTarifasEstrutura : TarifasEstrutura = {
     armazem : defaultTarifasCompositionArmazem,
     energia : defaultTarifasCompositionEnergia
+}
+
+
+const defaultTarifasEstruturaNegociacao : TarifasEstrutura = {
+    armazem : defaultTarifasCompositionArmazemNegociacao,
+    energia : defaultTarifasCompositionEnergiaNegociacao
 }
 
 const defaultTaxaNegociada : TaxaNegociada = {
@@ -59,6 +97,8 @@ const defaultTaxaNegociada : TaxaNegociada = {
 }
 
 const defaultTaxaNegociadaEstrutura : TaxasNegociadasEstrutura = {
+    tarifas : defaultTarifasEstruturaNegociacao,
+    periodos : defaultPeriodosEstruturaNegociacao,
     Normal : defaultTaxaNegociada,
     IMO : defaultTaxaNegociada,
     Oversize : defaultTaxaNegociada,
@@ -134,7 +174,7 @@ export default function Config() {
     ]
 
     useLayoutEffect( () => {
-        fetchInputForm(`${API_URL}:${API_PORT}/recintos/name`)
+        fetchInputForm(`${API_URL}:${API_PORT}/recintos/infos`)
         .then((list : any) => {
             setRecintoList(() => list)
             }

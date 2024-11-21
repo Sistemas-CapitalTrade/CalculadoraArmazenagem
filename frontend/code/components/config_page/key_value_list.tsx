@@ -37,14 +37,16 @@ export function FiledListKeyValue({
 
         const newList = [...list]
 
+        console.log(input_value)
+
         const updatedList = newList.map( input => 
             input.key == input_value.key ? {...input, value : input_value.value} : input)
             
         setList( ()=> updatedList)
         selectValue( {
             [input_key] : updatedList.reduce((acc : any, item) => {
-                const value_number = Number(String(item.value))
-                acc[item.key] = isNaN(value_number) ? item.value : value_number;
+                
+                acc[item.key] = item.value;
                 return acc;
             }, {})
         })
@@ -60,6 +62,7 @@ export function FiledListKeyValue({
                 label = {valor.label}
                 input_value = {valor.value}
                 selectValue={handleChange}
+                isPercentage={valor.isPorcentage}
                 
             ></FieldKeyValuePair>
         })

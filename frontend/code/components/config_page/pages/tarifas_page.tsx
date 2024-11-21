@@ -6,26 +6,39 @@ import { TarifasEstrutura } from "@/data/types";
 
 type TarifasPageProps = {
     returnedValue: (return_value : any) => void;
-    currentValues : TarifasEstrutura
+    currentValues : TarifasEstrutura,
+    tipo_mercadoria? : string
   };
 
 export default function TarifasPage({
     returnedValue,
-    currentValues
+    currentValues,
+    tipo_mercadoria
 } : TarifasPageProps) {
 
     const [tarifas,setTarifas] = useState<TarifasEstrutura>(currentValues)
     useEffect( () => {
-        returnedValue( {
-            tarifas : tarifas
-        })
+        console.log(tarifas)
+        if(tipo_mercadoria){
+            returnedValue( {
+                [tipo_mercadoria] : {
+                    tarifas : tarifas
+                }
+            })
+        }else {
+            
+            returnedValue( {
+                tarifas : tarifas
+            })
+        }
     },[tarifas])
 
     const tarifasListArmazem : KeyValuePair[] = [
         {
           key : "primeiro_periodo",
           label : "Tarifa primeiro periodo",
-          value : tarifas.armazem.primeiro_periodo  
+          value : tarifas.armazem.primeiro_periodo,
+          isPorcentage : true  
         },
         {
             key : "primeiro_periodo_minima",
@@ -35,7 +48,8 @@ export default function TarifasPage({
         {
             key : "segundo_periodo",
             label : "Tarifa segundo periodo",
-            value : tarifas.armazem.segundo_periodo  
+            value : tarifas.armazem.segundo_periodo  ,
+            isPorcentage : true
         },
         {
             key : "segundo_periodo_minima",
@@ -45,7 +59,8 @@ export default function TarifasPage({
         {
             key : "terceiro_periodo",
             label : "Tarifa terceiro periodo",
-            value : tarifas.armazem.terceiro_periodo  
+            value : tarifas.armazem.terceiro_periodo,
+            isPorcentage : true 
         },
         {
             key : "terceiro_periodo_minima",
@@ -55,7 +70,8 @@ export default function TarifasPage({
         {
             key : "quarto_periodo",
             label : "Tarifa quarto periodo",
-            value : tarifas.armazem.terceiro_periodo_minima  
+            value : tarifas.armazem.quarto_periodo,
+            isPorcentage : true
         },
         {
             key : "quarto_periodo_minima",
@@ -96,7 +112,7 @@ export default function TarifasPage({
 
     return (     
         <div className="font-inter p-4 items-center text-white">
-            <h1 className="text-center font-semibold text-2xl">Períodos</h1>
+            <h1 className="text-center font-semibold text-2xl">Tarifas</h1>
         
         
             <div className="mt-4 flex justify-between w-full p-4">

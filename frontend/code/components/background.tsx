@@ -8,12 +8,14 @@ type Backgroundprops = {
     ContentComponent: React.ElementType;
     InnerProps : CardContentprops;
   };
+const assetPrefix = process.env.NEXT_PUBLIC_ASSET_PREFIX;
 export default function Background({
     ContentComponent,
     InnerProps
 } : Backgroundprops) {
+  
   return (    
-    <div className="w-screen h-screen overflow-auto bg-fixed bg-cover bg-no-repeat" style={{backgroundImage: "url('images/background_CT_2024.png')"}}>
+    <div className="w-screen h-screen overflow-auto bg-fixed bg-cover bg-no-repeat" style={{backgroundImage: `url('${assetPrefix}/images/background_CT_2024.png')`}}>
 
         <ContentComponent headerTitle = {InnerProps.headerTitle} ContentComponent = {InnerProps.InnerContentComponent}/>
 

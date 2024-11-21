@@ -73,7 +73,7 @@ function ServicoInput({
                     <div className="relative h-12">
                         <input
                             type="checkbox"
-                            id="pretty-checkbox"
+                            id={`pretty-checkbox-${servico.id}`}
                             className="peer sr-only"
                             checked={servico.obrigatorio}
                             onChange={() => {
@@ -81,7 +81,7 @@ function ServicoInput({
                     }}
                         />
                         <label
-                            htmlFor="pretty-checkbox"
+                            htmlFor={`pretty-checkbox-${servico.id}`}
                             className="flex h-6 w-6 mx-auto mt-2 items-center justify-center rounded-full border-2 border-gray-300 bg-white transition-all duration-300 ease-in-out peer-checked:border-orange-600 peer-checked:bg-orange-500 peer-focus:ring-2 peer-focus:ring-orange-600 peer-focus:ring-offset-2 cursor-pointer"
                         >
                             <svg

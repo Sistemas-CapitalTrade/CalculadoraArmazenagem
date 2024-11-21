@@ -52,7 +52,7 @@ function Combobox({
   React.useEffect( () => {
     if(initialValue)
       setValue(initialValue)
-  },[])
+  })//,[])
 
   return (
     
@@ -68,7 +68,7 @@ function Combobox({
             className={`w-full h-12 bg-white text-black hover:bg-white justify-between ${error ? 'border-2 border-rose-400' : ''}`}
           >
             {value
-              ? list.find((item) => item.id === value)?.label
+              ? list.find((item) => item.label === value)?.label
               : <span>{placeholder}</span>}
             <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
           </Button>

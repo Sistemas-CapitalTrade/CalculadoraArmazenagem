@@ -33,12 +33,26 @@ export default function ConteinerTAG({
     useEffect(() => {
         refreshConteiners(conteiner); // This will be executed when the state changes
     }, [conteiner]);
+
+    
+    useEffect(() => {
+        setConteiner(conteiner_input); // This will be executed when the state changes
+    }, [conteiner_input]);
     
 
     function handleTipoConteiner (tipo_conteiner : any){
         
         setConteiner((prevConteiner) => {
             const updatedConteiner = { ...prevConteiner, tipo_conteiner };
+            return updatedConteiner
+            }
+        )
+    
+    }
+    function handleNumeroConteiner (numero : string){
+        
+        setConteiner((prevConteiner) => {
+            const updatedConteiner = { ...prevConteiner, numero };
             return updatedConteiner
             }
         )
@@ -106,7 +120,14 @@ export default function ConteinerTAG({
                 emptyField="Tipo de conteiner não selecionado" 
                 placeholder=" " />
             </div>
-            <div className="col-span-3 mt-2 font-inter font-light">
+            <div className="col-span-2  mt-2 font-inter font-light">
+                <input
+                className="h-full p-2 w-full text-black rounded-xl"
+                value={conteiner.numero}
+                onChange={(e) => handleNumeroConteiner(e.target.value)}
+                placeholder="Numero" />
+            </div>
+            <div className="col-span-2 mt-2 font-inter font-light">
                 <DatePicker 
                 initialValue={conteiner.entrada}
                 error={conteiner.entrada_error}
@@ -114,7 +135,7 @@ export default function ConteinerTAG({
                     handleDataEntrada(valor)
                 }}/>
             </div>
-            <div className="col-span-3 mt-2 font-inter font-light">
+            <div className="col-span-2 mt-2 font-inter font-light">
                 <DatePicker 
                 initialValue={conteiner.saida}
                 error={conteiner.saida_error}
