@@ -1,0 +1,273 @@
+{
+    "Portonave" : {
+        "taxas_negociadas" : 
+        {
+            "IMO" : {
+                "custos_adicionais_conteiner" : [
+                    {
+                    "nome": "Pesagem de conteiner (saída via gate)",
+                    "id": "pesagem_conteiner",
+                    "valor": 1.0
+                    }
+                ],
+                "levante" : 1.0
+            }
+        },
+        "taxa_padrao":{
+            "IMO" : 1.5,
+            "Oversize" : 1.5,
+            "Oversize IMO" : 3,
+            "Normal" : 0,
+            "Reefer" : 0
+        },
+        
+        "custos_adicionais_conteiner" : [
+            
+            {
+                "nome": "Pesagem de conteiner (saída via gate)",
+                "id": "pesagem_conteiner",
+                "valor": 125.99,    
+                "obrigatorio" : true
+            },
+            {
+                "nome": "Posicionamento para vistoria",
+                "id": "pos_vistoria",
+                "valor": 1071.00,
+                "obrigatorio" : false
+            },
+            {
+                "nome": "Posicionamento para pesagem",
+                "id": "pos_pesagem",
+                "valor": 1071.00,
+                "obrigatorio" : false
+            },
+            {
+                "nome": "Posicionamento para vistoria scanner",
+                "id": "pos_scanner",
+                "valor": 2000.00,
+                "obrigatorio" : false
+            },
+            {
+                "nome": "Posicionamento para vistoria expurgo",
+                "id": "pos_expurgo",
+                "valor": 1187.00,
+                "obrigatorio" : false
+            },
+            {
+                "nome": "Vistoria scanner",
+                "id": "vistoria_scanner",
+                "valor": 929.00,
+                "obrigatorio" : false
+            },
+            {
+                "nome": "Posicionamento para desova/ova (Dry)",
+                "id": "pos_desova_dry",
+                "valor": 4429.00,
+                "obrigatorio" : false
+            },
+            {
+                "nome": "Posicionamento para desova/ova (Reefer)",
+                "id": "pos_desova_refeer",
+                "valor": 4915.00,
+                "obrigatorio" : false
+            },
+            {
+                "nome": "Posicionamento para desova/ova de mudança",
+                "id": "pos_desova_mudanca",
+                "valor": 12780.00,
+                "obrigatorio" : false
+            },
+            {
+                "nome": "Crossdocking (Dry)",
+                "id": "cross_dry",
+                "valor": 2521.00,
+                "obrigatorio" : false
+            },
+            {
+                "nome": "Crossdocking (Reefer)",
+                "id": "cross_reefer",
+                "valor": 2885.00,
+                "obrigatorio" : false
+            },
+            {
+                "nome": "Movimento liberação DTA",
+                "id": "mov_dta",
+                "valor": 1719.00,
+                "obrigatorio" : false
+            },
+            {
+                "nome": "Renomeação de navio ou porto - exportação",
+                "id": "renomeacao_exportacao",
+                "valor": 750.00,
+                "obrigatorio" : false
+            },
+            {
+                "nome": "Renomeação de navio ou porto - importação",
+                "id": "renomeacao_importacao",
+                "valor": 1049.00,
+                "obrigatorio" : false
+            },
+            {
+                "nome": "Retirada de amostras",
+                "id": "retirada_amostra",
+                "valor": 220.00,
+                "obrigatorio" : false
+            },
+            {
+                "nome": "Desmembramento de pallet",
+                "id": "desmembramento",
+                "valor": 17.00,
+                "obrigatorio" : false
+            },
+            {
+                "nome": "Etiquetagem",
+                "id": "etiquetagem",
+                "valor": 8.00,
+                "obrigatorio" : false
+            },
+            {
+                "nome": "Disponibilização carreta contenção",
+                "id": "disponibilizacao_contencao",
+                "valor": 4164.00,
+                "obrigatorio" : false
+            },
+            {
+                "nome": "Diária carreta contenção",
+                "id": "diaria_contencao",
+                "valor": 3329.00,
+                "obrigatorio" : false
+            },
+            {
+                "nome": "Retirada e colocação de lacre",
+                "id": "retirada_colocacao_lacre",
+                "valor": 126.00,
+                "obrigatorio" : false
+            },
+            {
+                "nome": "Solicitação especial de agendamento de importação",
+                "id": "agendamento_importacao",
+                "valor": 613.00,
+                "obrigatorio" : false
+            },
+            {
+                "nome": "Fornecimento de fotografia",
+                "id": "fornecimento_fotografia",
+                "valor": 105.00,
+                "obrigatorio" : false
+            },
+            {
+                "nome": "Genset",
+                "id": "genset",
+                "valor": 1288.00,
+                "obrigatorio" : false
+            },
+            {
+                "nome": "NO SHOW - Importação",
+                "id": "noshow",
+                "valor": 393.00,
+                "obrigatorio" : false
+            },
+            {
+                "nome": "Posicionamento inclusão de adesivos de carga perigosa",
+                "id": "adesivo_carga_perigosa",
+                "valor": 1096.00,
+                "obrigatorio" : false
+            }
+        ],
+
+        "levante":{
+            "Normal" : 375.99,
+            "Open Top" : 967.00,
+            "Carga Solta" : 0.00,
+            "Flat Rack" : 967.00
+        },
+
+        "tarifas_armazem":{
+            "Normal":{
+                "primeiro_periodo_minima" : 393.00,
+                "primeiro_periodo" : 0.0022,
+
+                "segundo_periodo_minima" : 235.99 ,
+                "segundo_periodo" : 0.0028,
+
+                "terceiro_periodo_minima" : 346.00,
+                "terceiro_periodo" : 0.0040,
+
+                "quarto_periodo_minima" : 437.00,
+                "quarto_periodo" : 0.0044
+            },
+            "IMO":{
+                "primeiro_periodo_minima" : 786.00,  
+                "primeiro_periodo" : 0.0044,
+
+                "segundo_periodo_minima" : 471.98,
+                "segundo_periodo" : 0.0056,
+
+                "terceiro_periodo_minima" : 692.00,
+                "terceiro_periodo" : 0.0080,
+
+                "quarto_periodo_minima" : 874.00,
+                "quarto_periodo" : 0.0088
+            },
+            "Oversize":{
+                "primeiro_periodo_minima" : 786.00,  
+                "primeiro_periodo" : 0.0044,
+
+                "segundo_periodo_minima" : 471.98,
+                "segundo_periodo" : 0.0056,
+
+                "terceiro_periodo_minima" : 692.00,
+                "terceiro_periodo" : 0.0080,
+
+                "quarto_periodo_minima" : 874.00,
+                "quarto_periodo" : 0.0088
+            },
+            "Oversize IMO":{
+                "primeiro_periodo_minima" : 1375.500,
+                "primeiro_periodo" : 0.0077,
+
+                "segundo_periodo_minima" : 825.965,
+                "segundo_periodo" : 0.0098,
+
+                "terceiro_periodo_minima" : 1211.00,
+                "terceiro_periodo" : 0.0140,
+
+                "quarto_periodo_minima" : 1529.50,
+                "quarto_periodo" : 0.0154
+            },
+            "Reefer":{
+                "primeiro_periodo_minima" : 393.00,
+                "primeiro_periodo" : 0.0022,
+
+                "segundo_periodo_minima" : 235.99 ,
+                "segundo_periodo" : 0.0028,
+
+                "terceiro_periodo_minima" : 346.00,
+                "terceiro_periodo" : 0.0040,
+
+                "quarto_periodo_minima" : 437.00,
+                "quarto_periodo" : 0.0044
+            }
+        },
+        "tarifas_energia":{
+            "primeiro_periodo" : 267.00,
+            "segundo_periodo" : 267.00,
+            "terceiro_periodo" : 336.00,
+            "quarto_periodo" : 336.00
+        },
+        "periodos" : {
+             "armazem":{
+                "primeiro_periodo_dia" : 7,
+                "segundo_periodo_dia" : 14,
+                "terceiro_periodo_dia" : 29,
+                "quarto_periodo_dia" : 202  
+             },
+             "energia":{
+                "primeiro_periodo_dia" : 7,
+                "segundo_periodo_dia" : 16,
+                "terceiro_periodo_dia" : 29,
+                "quarto_periodo_dia" : 202
+             }
+        }
+    }
+}

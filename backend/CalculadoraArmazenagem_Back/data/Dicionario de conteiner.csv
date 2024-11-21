@@ -1,0 +1,62 @@
+﻿Descrição;Tipo_Mercadoria;Tipo_Conteiner
+20 CONTAINER;Normal;Normal
+20 DRY;Normal;Normal
+20' DRY VAN;Normal;Normal
+20CT TANK CONTAINER;Normal;Normal
+20CT TANK CONTAINER (DANGEROUS CARGO);IMO;Normal
+20ST;Normal;Normal
+22GP;Normal;Normal
+40 CONTAINER;Normal;Normal
+40' DRY VAN;Normal;Normal
+40' HIGH CUBE;Normal;Normal
+40 HIGH CUBE REEFER;Reefer;Normal
+40DRY;Normal;Normal
+40HC;Normal;Normal
+40RH;IMO;Normal
+40RK;IMO;Normal
+40ST;Normal;Normal
+BOX, REFRIG. EXT. POWER,20'/8'6;Reefer;Normal
+BOX, REFRIG. EXT. POWER,40'/8'6;Reefer;Normal
+BOX, REFRIG. HEATED EXT. POWER,20'/8'6;Reefer;Normal
+BOX, REFRIG. HEATED EXT. POWER,40'/8'6;Reefer;Normal
+BOX, REFRIG. SELF POWER,20'X 8'6;Reefer;Normal
+BOX, REFRIGERATED NON FOODSTUFF,40'/8'6;Reefer;Normal
+BREAK BULK;Normal;Normal
+CARGA SOLTA (LCL);Normal;Carga Solta
+CONTAINER PART - GENERAL PURPOSE - 20';Normal;Normal
+CONTAINER PART - GENERAL PURPOSE - 40';Normal;Normal
+DC-Dry;Normal;Normal
+DRY BULK NON-PRESSURE(20'/8'6);Normal;Normal
+FCL - CONTEINER CHEIO;Normal;Normal
+FLAT (COLLAPSIBLE)(40'/8'6);Normal;Flat Rack
+FLAT, FIXED ENDS(40'/8'6);Normal;Flat Rack
+FLAT, FIXED POSTS(20'/8'6);Normal;Flat Rack
+GENERAL PURPOSE (PASSIVE VENTS)(40'/8'6);Normal;Normal
+GENERAL PURPOSE(20'/8'6);Normal;Normal
+GENERAL PURPOSE(20'/8'6)-DRY 20';Normal;Normal
+GENERAL PURPOSE(40'/8'6) - DRY 40';Normal;Normal
+HARDTOP(40'/8'6'');Normal;Normal
+HIGH CUBE (PASSIVE VENTS)(40'/9'6);Normal;Normal
+HIGH CUBE 45' (45'/9'6);Normal;Normal
+HIGH CUBE FLAT COLL. FLUSH FOLD,40'/9'6;Normal;Flat Rack
+HIGH CUBE FLAT COLLAPSIBLE(40'/9'6);Normal;Flat Rack
+HIGH CUBE REF/HEATED EXT. POWER,40'/9'6;Reefer;Normal
+HIGH CUBE REFRIG. EXT. POWER,40'/9'6;Reefer;Normal
+HIGH CUBE REFRIG. SELF POWER,40'/9'6;Reefer;Normal
+HIGH CUBE(20'/9'6);Normal;Normal
+HIGH CUBE(40'/9'6);Normal;Normal
+HQ-9'6'';Normal;Normal
+INSULATED(20'/8');Normal;Normal
+OPENTOP(20'/8'6'');Normal;Open Top
+OTHER GENERAL 20' (DRY);Normal;Normal
+OTHER GENERAL 40' (DRY);Normal;Normal
+OTHER OPEN TOP 20';Normal;Open Top
+OTHER OPEN TOP 40';Normal;Open Top
+PASSIVE UPPER VENTS(20'/8'6'');Normal;Normal
+PLATFORM OR MAFI COLLAPSIBLE(20'/8'6);Normal;Normal
+RODOVIÁRIO;Normal;Normal
+RQ-Reefer;Reefer;Normal
+STANDARD 20;Normal;Normal
+TANK DANGER. LIQU. 4 BAR,20'/8'6;IMO;Normal
+TANK NON-DANGER. LIQU. 0.45 BAR,20'/8'6;Normal;Normal
+TANK NON-DANGER. LIQU. 1.5 BAR,40'/8'6;Normal;Normal
