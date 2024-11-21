@@ -7,7 +7,7 @@ Criar arquivo .env.production no root do projeto com essas variáveis
 
 NEXT_PUBLIC_API_URL =  API_URL
 
-NEXT_PUBLIC_API_PORT = API_URL (E urlPrefix)
+NEXT_PUBLIC_API_PORT = API_PORT (E urlPrefix)
 
 ### Back end
 Criar arquivo .env no root do projeto com essas váriaveis
