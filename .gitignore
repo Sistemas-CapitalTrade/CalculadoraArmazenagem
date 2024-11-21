@@ -4,4 +4,5 @@
 # Any .env files, including .env.production
 **/.env*
 
-#
+# Any log files
+backend/code/logs/*
