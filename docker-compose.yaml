@@ -1,0 +1,21 @@
+version: "3.8"
+
+
+networks:
+  net_calc:
+    driver: bridge
+
+services:
+  web:
+    build: frontend/code/
+    networks:
+     - net_calc
+    ports:
+      - "3001:3001"
+  api:
+    build: backend/code/
+    networks:
+      - net_calc
+    ports:
+      - "3002:3002"
+
