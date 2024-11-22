@@ -1,8 +1,8 @@
-# Motivação
+# Motivação 💻
 
 Essa ferramenta foi desenvolvida a fim de reduzir erros operacionais na etapa de faturamentos dos serviços prestados pelos recintos e cobrados da Capital Trade.
 
-# Tecnologias
+# Tecnologias 💻
 
 Docker
 
@@ -12,7 +12,7 @@ Flask (Python)
 
 OracleDB
 
-# Como rodar
+# Como rodar 💻
 
 ## ENV
 
