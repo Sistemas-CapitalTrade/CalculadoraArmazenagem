@@ -1,3 +1,12 @@
+# Motivação
+Essa ferramenta foi desenvolvida a fim de reduzir erros operacionais na etapa de faturamentos dos serviços prestados pelos recintos e cobrados da Capital Trade.
+
+# Tech Stack
+Docker
+NextJS (React)
+Flask (Python)
+OracleDB
+
 # Para rodar esse projeto
 
 ## ENV
