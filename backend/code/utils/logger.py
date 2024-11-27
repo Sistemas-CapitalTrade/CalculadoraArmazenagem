@@ -20,8 +20,12 @@ logger.addHandler(stream_handler)
 
 
 def logRequest(message, levelName, exc_info = False):
+    ip_addr = ''
     # Access the client IP from g
-    ip_addr = getattr(g, 'client_ip', 'Unknown IP')  # Default to 'Unknown IP' if not set
+    try:
+        ip_addr = getattr(g, 'client_ip', 'Unknown IP')  # Default to 'Unknown IP' if not set
+    except RuntimeError as E:
+        ip_addr = "Local Development"
     cIP = {'clientip': ip_addr}
     logger.log(level=levelName,msg=message,extra=cIP, exc_info=exc_info)
 

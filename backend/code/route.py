@@ -1,11 +1,12 @@
 from datetime import datetime
 import json
 from copy import deepcopy
-from flask import Flask, jsonify, url_for, render_template, request, redirect, g
+from flask import Flask, jsonify, request, redirect, send_file, g
 from flask_cors import CORS, cross_origin
 from collections import Counter
 from waitress import serve
 from utils.models import TiposMercadorias, TiposConteiner, loadRecintos, saveRecintos, deleteRecintos, loadDicionarioConteiner
+from utils.PDF_generator import generatePDF
 from conexos.integration import ConexosDatabaseIntegration
 from utils.logger import logRequest
 import utils.calculadora as calculadora
@@ -268,7 +269,7 @@ def calc():
         logRequest(levelName=logging.INFO, message=f"Calculando levante")
         # Calcular o valor do levante do conteiner
         try:
-            valor_levante += calculadora.calcularLevante(conteiner=conteiner,recinto=recinto,tipo_mercadoria=tipo_mercadoria_input)
+            valor_levante += calculadora.calcularLevante(tipo_container=conteiner["tipo"],recinto=recinto,tipo_mercadoria=tipo_mercadoria_input)
         except Exception as e:
             logRequest(levelName=logging.ERROR, message=f"Erro ao calcular o levante do conteiner {conteiner["sequence"]}. Error {e}")
             return jsonify({"ERROR": f"Erro ao calcular o levante do conteiner {conteiner["sequence"]}. Error {e}"},{"CODE_STATUS" : "CALC_PULLING_ERROR"}), 400
@@ -305,6 +306,55 @@ def calc():
     return jsonValorTotal
     
 
+@app.route('/sendPDF', methods=['GET'])
+def PDF():
+    data = {
+        "num_di" : "2304881172",
+        "ref_ext" : "OCCT14246/24",
+        "data_registro" : "25/11/2024",
+        "ptax" : "5,3412",
+        "valor_aduaneiro" : 1078625.85,
+        "recinto_nome" : "Portonave",
+        "tipo_mercadoria" : "Reefer",
+        "conteineres" : [
+            {
+                "seq" : 1, 
+                "numero" : "EMCU5465604",
+                "entrada" : "01/11/2024",
+                "tipo" : "Normal",
+                "saida" : "15/11/2024",
+                "servicos" : ["pesagem_conteiner"]
+            },
+            {
+                "seq" : 2,
+                "numero" : "EMCU5510323",
+                "entrada" : "01/11/2024",
+                "tipo" : "Carga Solta",
+                "saida" : "08/11/2024",
+                "servicos" : ["pesagem_conteiner"]
+            },
+            {
+                "seq" : 3,
+                "numero" : "EMCU5560237",
+                "entrada" : "01/11/2024",
+                "tipo" : "Normal",
+                "saida" : "08/11/2024",
+                "servicos" : ["pesagem_conteiner"]
+            },
+            {
+                "seq" : 4,
+                "numero" : "EMCU5701124",
+                "entrada" : "01/11/2024",
+                "tipo" : "Normal",
+                "saida" : "08/11/2024",
+                "servicos" : ["pesagem_conteiner","pos_vistoria"]
+            }
+            
+        ]   
+        
+    }
+    generatePDF(data)
+    return send_file(f'{data["num_di"]}.pdf',as_attachment=True)
 if __name__ == '__main__':
 
     recintos = loadRecintos()
