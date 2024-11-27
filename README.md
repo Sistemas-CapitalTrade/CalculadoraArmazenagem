@@ -1,4 +1,18 @@
-# Para rodar esse projeto
+# Motivação 💻
+
+Essa ferramenta foi desenvolvida a fim de reduzir erros operacionais na etapa de faturamentos dos serviços prestados pelos recintos e cobrados da Capital Trade.
+
+# Tecnologias 💻
+
+Docker
+
+NextJS (React)
+
+Flask (Python)
+
+OracleDB
+
+# Como rodar 💻
 
 ## ENV
 
@@ -7,7 +21,7 @@ Criar arquivo .env.production no root do projeto com essas variáveis
 
 NEXT_PUBLIC_API_URL =  API_URL
 
-NEXT_PUBLIC_API_PORT = API_URL (E urlPrefix)
+NEXT_PUBLIC_API_PORT = API_PORT (E urlPrefix)
 
 ### Back end
 Criar arquivo .env no root do projeto com essas váriaveis
