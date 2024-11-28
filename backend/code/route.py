@@ -308,7 +308,13 @@ def calc():
 
 @app.route('/sendPDF', methods=['GET'])
 def PDF():
-    data = {
+    logRequest(levelName=logging.INFO, message=f"Iniciando geração de PDF")
+
+    
+    #Pegar dados do request
+    data = request.get_json()
+
+    '''    data = { 
         "num_di" : "2304881172",
         "ref_ext" : "OCCT14246/24",
         "data_registro" : "25/11/2024",
@@ -352,7 +358,16 @@ def PDF():
             
         ]   
         
-    }
+    }'''
+    num_di = data['num_di']
+    ref_ext = data['ref_ext']
+    data_registro = data['data_registro']
+    ptax = data['ptax']
+    valor_aduaneiro = data["valor_aduaneiro"]
+    recinto_nome = data['recinto_nome']
+    tipo_mercadoria = data['tipo_mercadoria']
+    containeres = data['containeres']
+
     generatePDF(data)
     return send_file(f'{data["num_di"]}.pdf',as_attachment=True)
 if __name__ == '__main__':

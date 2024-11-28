@@ -12,6 +12,8 @@ import { Loader2 } from "lucide-react";
 import { Button } from "./ui/button";
 import LoadingWindow from "./ui/loading";
 import ErrorWindow from "./ui/error";
+import { DatePicker } from "./form_field/datepicker";
+import { NumericFormat } from "react-number-format";
 
 type FormProp = {
   returnRecinto : (recinto_name : string) => void 
@@ -25,7 +27,10 @@ export default function Form({
   const [sequence, setSequence] = useState(0)
   const [recinto, setRecinto] = useState<any>()
   const [tipo_mercadoria,setTipoMercadoria] = useState<string>  ()
-  const [ref_ext,setCodExt] = useState<string>  ()
+  const [ref_ext,setCodExt] = useState<string>("")
+  const [num_di,setNumDI] = useState<string>("")
+  const [PTAX,setPTAX] = useState<number>(0)
+  const [data_registro,setDataRegistro] = useState<Date | null>(null)
   const [CIF, setCIF] = useState<number>()
   const [conteinerList,setConteinerList] = useState<Conteiner[]>([])
   const [custoObrigatorio, setCustoObrigatorio] = useState<InputLabelForm[]>([])
@@ -40,6 +45,8 @@ export default function Form({
   const tipoMercadoriaRef = useRef<HTMLButtonElement>(null);
   const cifRef = useRef<HTMLInputElement>(null);
   const codExtRef = useRef<HTMLInputElement>(null);
+  const codNumDI = useRef<HTMLInputElement>(null);
+  const PTAXRef = useRef<HTMLInputElement>(null)
   const [valorArmazenagem,setValorArmazenagem] = useState<number>(0)
   const [valorLevante,setValorLevante] = useState<number>(0)
   const [valorServicos,setValorServicos] = useState<number>(0)
@@ -222,7 +229,6 @@ export default function Form({
   }
 
   function handleRecintoSelection(valor:any) {
-    console.log(valor)
     setRecinto(() => valor)
 
     if(valor == ''){
@@ -268,11 +274,11 @@ export default function Form({
     
   }
 
-  const getCIF = (cif : any) => {
+  const handleCIF = (cif : any) => {
     setCIF(cif)
   }
   
-  function handleSubmit () {
+  function validateForm(){
     const newFormErrors: {[key: string]: boolean} = {};
 
     // Check required fields
@@ -280,6 +286,7 @@ export default function Form({
     if (!ref_ext) newFormErrors.ref_ext = true;
     if (!tipo_mercadoria) newFormErrors.tipo_mercadoria = true;
     if (!CIF) newFormErrors.CIF = true;
+    if (!num_di) newFormErrors.num_di = true;
 
     const conteinerListCopy = [...conteinerList]
 
@@ -298,13 +305,15 @@ export default function Form({
     setConteinerList(conteinerListCopy)
     console.log(newFormErrors)
     if (Object.keys(newFormErrors).length !== 0 || conteinerListCopy.length == 0 || conteinerListCopy.filter(conteiner => conteiner.entrada_error || conteiner.saida_error || conteiner.tipo_conteiner_error).length != 0) {
-      return
+      return false
     }
-    // Marcar que o relatório está sendo gerado
-    setIsLoadingSubmit(true)
-    setBuildRepportError(false)
+    return true
+  }
+
+
+  function createFormObject(){
     
-    const conteinerSendData = conteinerListCopy.map(conteiner => (
+    const conteinerSendData = conteinerList.map(conteiner => (
       {
         id : conteiner.id,
         sequence : conteiner.sequence,
@@ -327,6 +336,18 @@ export default function Form({
         conteineres : conteinerSendData
     };
 
+    return dataToSend
+  }
+
+  function handleSubmit () {
+    const validation = validateForm()
+    if(!validation)
+      return
+    // Marcar que o relatório está sendo gerado
+    setIsLoadingSubmit(true)
+    setBuildRepportError(false)
+    
+    const dataToSend = createFormObject()
     // Send the data to the backend
     fetch(`${API_URL}:${API_PORT}/calc`, {
         method: 'POST',
@@ -379,10 +400,21 @@ export default function Form({
     });
   };
 
-  function getCodExt(valor : string) {
+  function handleCodExt(valor : string) {
     setCodExt( () => valor)
   }
+  function handleNumDI(valor : string) {
+    setNumDI( () => valor)
+  }
 
+  function handleDataRegistro(valor : Date){
+    setDataRegistro(() => valor)
+  }
+
+  function handlePTAX(valor : number){
+    setPTAX(() => valor)
+
+  }
   function searchRefExt(){
     // Mostrar tela de carregando
     setIsLoadingSearch(true)
@@ -402,18 +434,22 @@ export default function Form({
       const processo = recintoList.filter(x => x.id == data.RECINTO_COD).at(0)
       if(processo){
         handleRecintoSelection(processo.label)
-        setCIF(() => {
-          return data.VALOR_CIF
-        })
+        console.log(num_di)
+        setNumDI(() => data.CD_DI)
 
-        setTipoMercadoria( () => {
-          return data.TIPO_MERCADORIA
-        })
+        const dataRegistroDate = new Date(data.DATA_REGISTRO)
+        // const dataRegistroFormatada = dataRegistroString.substring(0,dataRegistroString.indexOf('T')).replaceAll('-','/')        
+        setDataRegistro(() => dataRegistroDate)
+        
+        setPTAX(() => data.PTAX)
+
+        setCIF(() => data.VALOR_CIF )
+
+        setTipoMercadoria( () => data.TIPO_MERCADORIA )
 
         const conteinersData = JSON.parse(data.CONTAINERES)
         setSequence(conteinersData.length - 1)
-        setConteinerList( () => {
-          return conteinersData.map((x : any,index : number) => {
+        setConteinerList( () => conteinersData.map((x : any,index : number) => {
 
             return {
               
@@ -427,7 +463,7 @@ export default function Form({
               servicos : []
             }
           })
-        })
+        )
       }
       else{
         console.log("REF_EXT NÃO ENCONTRADO")
@@ -464,36 +500,66 @@ export default function Form({
       {isLoadingSearch && <LoadingWindow />}
       {isErrorSearch && <ErrorWindow message="Erro ao procurar a Referência Externa da DI, verifique se os dados estão corretos." onContinue={() => setIsErrorSearch(false)} />}
       <div className="flex justify-between">
-        <div className="grid gap-4 h-min w-3/5 grid-cols-2 mt-12">
+        <div className="grid gap-4 h-min w-3/5 grid-cols-3 mt-12">
+        <div className="col-span-2">
+          <InputForm currentValue={ref_ext} ref={codExtRef} error={formErrors.ref_ext} selectValue={handleCodExt} field = "ref_ext" name = "Referência Externa" trailingIcon={searchRefExtButton()}/>
+        </div>
           
-          <div className="col-span-2">
-
-            <InputForm ref={codExtRef} error={formErrors.ref_ext} selectValue={getCodExt} field = "ref_ext" name = "Referência Externa" trailingIcon={searchRefExtButton()}/>
+        <InputForm currentValue={num_di} ref={codNumDI} error={formErrors.num_di} selectValue={handleNumDI} field = "num_di" name = "D.I" />
           
-          </div>
+          
 {/*             
             <div className="">
 
-              <InputForm ref={codExtRef} error={formErrors.ref_ext} selectValue={getCodExt} field = "ref_ext" name = "Referência Externa" trailingIcon={searchRefExtButton()}/>
+              <InputForm ref={codExtRef} error={formErrors.ref_ext} selectValue={handleCodExt} field = "ref_ext" name = "Referência Externa" trailingIcon={searchRefExtButton()}/>
               
             </div> */}
 
-          <div className="mt-2">
+          <div className="">
 
             <label htmlFor="recinto" className="block text-lg font-inter font-light">Recinto</label>
             <Combobox initialValue={recinto} ref={recintoRef} error={formErrors.recinto} selectValue={handleRecintoSelection} list={recintoList} emptyField="Nenhum recinto selecionado" placeholder="Selecione um recinto"></Combobox>
             
           </div>
+          <div className="">
+            <CurrencyInput
+              name="Valor Aduaneiro"
+              initialValue={CIF}
+              ref={cifRef}
+              error={formErrors.CIF}
+              returnValor={handleCIF}
+            />  
+          </div>
+          <div className="">
+            <label className="block text-lg font-inter font-light">Data Registro</label>
+            <DatePicker 
+                  initialValue={data_registro}
+                  error={formErrors.data_registro}
+                  selectValue={(valor) => {
+                      handleDataRegistro(valor)
+            }}/>
 
-          <CurrencyInput initialValue={CIF} ref={cifRef} error={formErrors.CIF} returnValorCIF={getCIF}/>  
+          </div>
           
-          <div className="col-span-2 mt-2">
+          <div className="col-span-2">
 
             <label htmlFor="tipo_mercadoria" className="block text-lg font-inter font-light">Tipo de mercadoria</label>
             
             <Combobox initialValue={tipo_mercadoria} ref={tipoMercadoriaRef} error={formErrors.tipo_mercadoria} selectValue={setTipoMercadoria} list={tipoMercadoriaList} emptyField="Nenhum tipo de mercadoria selecionado" placeholder="Selecione um tipo de mercadoria"></Combobox>
             
           </div>
+        
+          <div className="">
+            <CurrencyInput 
+              name="Dólar"
+              initialValue={PTAX} 
+              ref={PTAXRef} 
+              error={formErrors.PTAX} 
+              decimalScale={4}
+              returnValor={handlePTAX}
+            />
+          </div>
+        
         </div>
 
         <div ref={refToValuesCalculated} className="relative h-92 p-4 w-2/6 mt-12 mx-auto bg-gray-900 bg-opacity-60 rounded-2xl">
@@ -551,9 +617,27 @@ export default function Form({
 
       </div>
 
-      <div className="mt-24 flex w-full">
+      <div className="mt-24 space-x-4 flex w-full">
         {/* <input type="submit" className=" bg-orange-700 bg-opacity-80 hover:bg-opacity-60 transition-opacity rounded-xl text-white text-lg py-3 px-6" value="Simular"/> */}
         <Button 
+          type="button" 
+          onClick={handleSubmit} 
+          className={` bg-orange-700 bg-opacity-80 hover:bg-opacity-60 transition-opacity rounded-xl text-white font-inter text-lg h-12 ${isLoadingSubmit ? "w-50" : "w-24"}`} 
+          >
+            {
+              isLoadingSubmit 
+              ?
+                <>
+                  <span className="h-min w-min">Carregando</span>
+                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />                
+                </>
+                :
+                  "Simular"
+            }
+            
+          </Button>
+
+          <Button 
           type="button" 
           onClick={handleSubmit} 
           className={` bg-orange-700 bg-opacity-80 hover:bg-opacity-60 transition-opacity rounded-xl text-white font-inter text-lg h-12 ${isLoadingSubmit ? "w-50" : "w-24"}`} 

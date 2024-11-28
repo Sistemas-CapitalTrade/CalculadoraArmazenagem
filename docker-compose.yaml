@@ -8,14 +8,37 @@ networks:
 services:
   web:
     build: frontend/code/
+    command: npm run dev
     networks:
      - net_calc
     ports:
       - "3001:3001"
+    develop:
+      watch:
+        - path: frontend/code/components
+          action: sync
+          target: app/components
+
   api:
     build: backend/code/
     networks:
       - net_calc
     ports:
       - "3002:3002"
+    develop:
+      watch:
+        - path: backend/code/data
+          action: sync
+          target: app/data
 
+        - path: backend/code/utils
+          action: sync
+          target: app/utils
+        
+        - path: backend/code/conexos
+          action: sync
+          target: app/conexos
+
+        - path: backend/code/route.py
+          action: sync
+          target: app/route.py

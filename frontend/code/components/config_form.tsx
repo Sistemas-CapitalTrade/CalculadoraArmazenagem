@@ -310,7 +310,7 @@ export default function Config() {
                 {!insertMode ?  
                     <Combobox error={recintoError} selectValue={handleRecintoSelection} list={recintoList} emptyField="Nenhum recinto selecionado" placeholder="Selecione um recinto"></Combobox> 
                     :
-                    <InputForm selectValue={handleRecintoSelection} field = "recinto" name = "Digite o nome do recinto"/>
+                    <InputForm currentValue={recinto} selectValue={handleRecintoSelection} field = "recinto" name = "Digite o nome do recinto"/>
                 }
                     
             </div>

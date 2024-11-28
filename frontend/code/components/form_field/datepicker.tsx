@@ -31,11 +31,11 @@ export function DatePicker({
   const [errorMessage, setErrorMessage] = React.useState<string>("")
 
   React.useEffect(()=>{
-          if(initialValue){
-            setDate(initialValue)
-            setStringDate(format(initialValue, "dd/MM/yyyy")); // Set initial string date
+      if(initialValue){
+        setDate(initialValue)
+        setStringDate(format(initialValue, "dd/MM/yyyy")); // Set initial string date
       }
-    },[]
+    },[initialValue]
   )
 
 
@@ -46,10 +46,10 @@ export function DatePicker({
           type="string"
           value={stringDate}
           className={`w-full h-12 justify-start bg-white text-black p-4 text-left font-normal rounded-lg text-sm ${error ? 'border-2 border-rose-400' : ''}`}
-          mask="99/99/9999"
+          mask="XX/XX/XX__"
           
           replacement={{
-            '9': /[0-9]/, // Matches any digit (0-9)
+            'X': /[0-9]/, // Matches any digit (0-9)
             '_': /[0-9]?/, // Matches any digit (0-9) for the year
           }}
           onChange={(e) => {

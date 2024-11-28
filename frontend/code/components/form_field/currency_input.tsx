@@ -2,36 +2,42 @@
 import { forwardRef, Ref, useEffect, useState } from "react";
 import { NumericFormat } from "react-number-format";
 type props = {
-    returnValorCIF : (cif : any) => void,
+    returnValor : (cif : any) => void,
     initialValue? : number,
-    error? : boolean
+    error? : boolean,
+    prefix? : string,
+    decimalScale? : number,
+    name : string,    
 }
 function CurrencyInput({
-    returnValorCIF,
+    returnValor,
     initialValue,
-    error
+    error,
+    prefix,
+    decimalScale,
+    name
 } : props, ref: Ref<HTMLInputElement>){
-    const [CIF,setCIF] = useState<number>()
-    const handleLangChange = (cif : any) => {
-        returnValorCIF(cif)    
+    const [valor,setValor] = useState<number>()
+    const handleLangChange = (valor : any) => {
+        returnValor(valor)    
     }
 
     useEffect( () => {
         if(initialValue)
-            setCIF(initialValue)
+            setValor(initialValue)
     })
 
     return (
         <div className="">
-            <label className="block text-lg font-inter font-light">CIF</label>
+            <label className="block text-lg font-inter font-light">{name}</label>
             <NumericFormat
             getInputRef={ref}
-            className={`flex bg-white mt-2 h-12 p-2 text-black w-full font-inter rounded-md font-light justify-end ${error ? 'border-2 border-rose-400' : ''}`}
-            value={CIF}
+            className={`flex bg-white h-12 p-2 text-black w-full font-inter rounded-md font-light justify-end ${error ? 'border-2 border-rose-400' : ''}`}
+            value={valor}
             thousandSeparator="."  // Brazilian format for thousands separator
             decimalSeparator=","
-            prefix="R$ "
-            decimalScale={2}  // Always show two decimal places
+            prefix={prefix ? prefix : "R$ "}
+            decimalScale={decimalScale ? decimalScale : 2}  // Always show two decimal places
             fixedDecimalScale={true}
             onValueChange={(valor : any) => {
                 const { floatValue } = valor;
