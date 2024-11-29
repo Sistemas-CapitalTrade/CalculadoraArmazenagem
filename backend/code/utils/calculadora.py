@@ -4,20 +4,20 @@ import logging
 from utils.logger import logRequest
 
 # Calculo de armazenagem dentro do periodo
-def calcular_periodo(valor_cif, quantidade_dias, recinto, periodo, minimo,conteineres):
+def calcular_periodo(valor_aduaneiro, quantidade_dias, recinto, periodo, minimo,conteineres):
     
     # Usar tarifas e valores mínimos negociados
     tarifa = recinto['tarifas']['armazem'][periodo] if not recinto["taxas_negociadas"]["tarifas"]['armazem'][periodo] else recinto["taxas_negociadas"]["tarifas"]['armazem'][periodo]
     valor_minimo =recinto['tarifas']['armazem'][minimo] if not recinto["taxas_negociadas"]["tarifas"]['armazem'][minimo] else recinto["taxas_negociadas"]["tarifas"]['armazem'][minimo]
     # logRequest(levelName=logging.INFO, message=recinto["taxas_negociadas"]["tarifas"]['armazem'][minimo])
-    # Calcula quanto que é o valor do cif, dividindo a quantidade de conteieneres, vezes a tarifa do periodo
-    temp_armazenagem = valor_cif * tarifa / len(conteineres)
+    # Calcula quanto que é o valor do valor_aduaneiro, dividindo a quantidade de conteieneres, vezes a tarifa do periodo
+    temp_armazenagem = valor_aduaneiro  * tarifa / len(conteineres)
     armazenagem = 0
     # Se esse valor for menor que o valor minimo, o valor da armzenagem é a tarifa minima vezes qtd conteineres
     if(temp_armazenagem < valor_minimo):
         armazenagem = valor_minimo
     else:
-        armazenagem = valor_cif * tarifa / len(conteineres)
+        armazenagem = valor_aduaneiro * tarifa / len(conteineres)
     # Retorna o valor calculado, multiplicado pelos os dias no período
     return armazenagem * quantidade_dias
 
@@ -39,7 +39,7 @@ def calcularLevante(tipo_container,recinto,tipo_mercadoria):
     return round(levante,2)
 
 # Expand define se o valor retornado será somado ou descritivo
-def calcularArmazenagem(tipo_mercadoria, entrada, saida, recinto, valor_cif,conteineres, expand = False):
+def calcularArmazenagem(tipo_mercadoria, entrada, saida, recinto, valor_aduaneiro,conteineres, expand = False):
     
     # Criando um dict para formatar o valor expandido
     descritivo_template = [
@@ -72,7 +72,7 @@ def calcularArmazenagem(tipo_mercadoria, entrada, saida, recinto, valor_cif,cont
     logRequest(levelName=logging.INFO, message=f"Armazenagem {armazenagem}")
 
     valor_primeiro_periodo = calcular_periodo(
-        valor_cif=valor_cif, 
+        valor_aduaneiro=valor_aduaneiro, 
         recinto=recinto, 
         quantidade_dias=1,
         periodo='primeiro_periodo',
@@ -99,7 +99,7 @@ def calcularArmazenagem(tipo_mercadoria, entrada, saida, recinto, valor_cif,cont
         dias_calculo = dias_periodo if dias_faltantes >= dias_periodo else dias_faltantes
         dias_faltantes -= dias_calculo
         segundo_periodo_valor = calcular_periodo(
-            valor_cif=valor_cif, 
+            valor_aduaneiro=valor_aduaneiro, 
             recinto=recinto, 
             quantidade_dias=dias_calculo,
             periodo='segundo_periodo',
@@ -124,7 +124,7 @@ def calcularArmazenagem(tipo_mercadoria, entrada, saida, recinto, valor_cif,cont
         dias_calculo = dias_periodo if dias_faltantes >= dias_periodo else dias_faltantes
         dias_faltantes -= dias_calculo
         terceiro_periodo_valor = calcular_periodo(
-            valor_cif=valor_cif, 
+            valor_aduaneiro=valor_aduaneiro, 
             recinto=recinto, 
             quantidade_dias=dias_calculo,
             periodo='terceiro_periodo',
@@ -149,7 +149,7 @@ def calcularArmazenagem(tipo_mercadoria, entrada, saida, recinto, valor_cif,cont
             raise ValueError("A quantidade de de dias é maior que o permitido pelo Recinto")
         
         quarto_periodo_valor = calcular_periodo(
-            valor_cif=valor_cif, 
+            valor_aduaneiro=valor_aduaneiro, 
             recinto=recinto, 
             quantidade_dias=dias_faltantes,
             periodo='quarto_periodo',

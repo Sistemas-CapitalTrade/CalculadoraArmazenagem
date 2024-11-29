@@ -36,8 +36,20 @@ export default function ConteinerTAG({
 
     
     useEffect(() => {
+        if(conteiner_input.periodo == ""){
+            conteiner_input.periodo = calcularPeriodo(conteiner_input.entrada, conteiner_input.saida)
+        }
         setConteiner(conteiner_input); // This will be executed when the state changes
     }, [conteiner_input]);
+
+    
+    useEffect(() => {
+        if(periodos != undefined){
+            const containerCopy = {...conteiner}
+            containerCopy.periodo = calcularPeriodo(containerCopy.entrada, containerCopy.saida)
+            setConteiner(containerCopy)
+        }; // This will be executed when the state changes
+    }, [periodos]);
     
 
     function handleTipoConteiner (tipo_conteiner : any){
@@ -90,7 +102,7 @@ export default function ConteinerTAG({
     }
     
     function calcularPeriodo (entrada : Date | null, saida : Date | null){
-        if(!(entrada && saida))
+        if(!(entrada && saida && periodos))
             return "Digite as datas"
         const dateDiff = differenceInDays(saida,entrada) + 1
         let periodo = ""
@@ -122,7 +134,7 @@ export default function ConteinerTAG({
             </div>
             <div className="col-span-2  mt-2 font-inter font-light">
                 <input
-                className="h-full p-2 w-full text-black rounded-xl"
+                className="h-12 p-2 w-full text-black rounded-lg"
                 value={conteiner.numero}
                 onChange={(e) => handleNumeroConteiner(e.target.value)}
                 placeholder="Numero" />

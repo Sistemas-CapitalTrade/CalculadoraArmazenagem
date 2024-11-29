@@ -25,20 +25,22 @@ services:
       - net_calc
     ports:
       - "3002:3002"
+    volumes:
+      - /home/logs/calculadora:/app/logs
     develop:
       watch:
         - path: backend/code/data
-          action: sync
+          action: rebuild
           target: app/data
 
         - path: backend/code/utils
-          action: sync
+          action: rebuild
           target: app/utils
         
         - path: backend/code/conexos
-          action: sync
+          action: rebuild
           target: app/conexos
 
         - path: backend/code/route.py
-          action: sync
+          action: rebuild
           target: app/route.py

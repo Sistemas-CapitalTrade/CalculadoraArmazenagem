@@ -11,6 +11,7 @@ from conexos.integration import ConexosDatabaseIntegration
 from utils.logger import logRequest
 import utils.calculadora as calculadora
 from oracledb import DatabaseError
+import traceback
 import logging
 
 # Instancia o APP no flask
@@ -194,13 +195,12 @@ def getInfoFromRefExt(refExt):
 def calc():
     logRequest(levelName=logging.INFO, message=f"Iniciando calculo")
     # Init vars
-    cif = 0
+    str_valor_aduaneiro = 0
     recintoNome = 0
-    ref_ext = 0
     tipo_mercadoria_input = 0
     custo_obrigatorio = 0
     conteineres = 0
-    valor_cif = 0
+    valor_aduaneiro = 0
     recinto = 0
     valor_armazenagem = 0
     valor_levante = 0
@@ -210,12 +210,11 @@ def calc():
     #Pegar dados do request
     data = request.get_json()
 
-    # Separar os dados nos campos de CIF, recinto, tipo_mercadoria e os conteineres
+    # Separar os dados nos campos de valor_aduaneiro, recinto, tipo_mercadoria e os conteineres
     
     try:
-        cif = data['cif']
+        str_valor_aduaneiro = data['valor_aduaneiro']
         recintoNome = data['recinto']
-        ref_ext = data['ref_ext']
         tipo_mercadoria_input = data['tipo_mercadoria']
         custo_obrigatorio = data['custos_obrigatorios']
         conteineres = data['conteineres']
@@ -228,14 +227,14 @@ def calc():
     recinto = recintos[recintoNome]
     
     
-    #Tentar converter o CIF para float
+    #Tentar converter o valor_aduaneiro para float
     try:
-        valor_cif = float(cif)
+        valor_aduaneiro = float(str_valor_aduaneiro)
     except:
-        logRequest(levelName=logging.ERROR, message=f"CIF inválido: {cif}")
-        return jsonify({"ERROR": "CIF inválido"},{"CODE_STATUS" : "INVALID_CIF"}), 400
+        logRequest(levelName=logging.ERROR, message=f"valor_aduaneiro inválido: {str_valor_aduaneiro}")
+        return jsonify({"ERROR": "valor_aduaneiro inválido"},{"CODE_STATUS" : "INVALID_valor_aduaneiro"}), 400
     
-    logRequest(levelName=logging.INFO, message=f"Valor CIF {valor_cif}")
+    logRequest(levelName=logging.INFO, message=f"Valor valor_aduaneiro {valor_aduaneiro}")
 
     for conteiner in conteineres:
         input_entrada = conteiner['entrada']
@@ -260,7 +259,7 @@ def calc():
         logRequest(levelName=logging.INFO, message=f"Calculando armazenagem")
         try:
             # Calcular o valor de armazenagem do conteiner
-            valor_armazenagem += calculadora.calcularArmazenagem(tipo_mercadoria=tipo_mercadoria_input,entrada=data_entrada,saida=data_saida,recinto=recinto,valor_cif=valor_cif,conteineres=conteineres)
+            valor_armazenagem += calculadora.calcularArmazenagem(tipo_mercadoria=tipo_mercadoria_input,entrada=data_entrada,saida=data_saida,recinto=recinto,valor_aduaneiro=valor_aduaneiro,conteineres=conteineres)
         except Exception as e:
             logRequest(levelName=logging.ERROR, message=f"Erro ao calcular a armazenagem do conteiner {conteiner["sequence"]}. Error {e}")
             return jsonify({"ERROR": f"Erro ao calcular a armazenagem do conteiner {conteiner["sequence"]}. Error {e}"},{"CODE_STATUS" : "CALC_STORAGE_ERROR"}), 400
@@ -306,69 +305,33 @@ def calc():
     return jsonValorTotal
     
 
-@app.route('/sendPDF', methods=['GET'])
+@app.route('/sendPDF', methods=['POST'])
+@cross_origin()
 def PDF():
     logRequest(levelName=logging.INFO, message=f"Iniciando geração de PDF")
 
     
     #Pegar dados do request
-    data = request.get_json()
+    request_data = request.get_json()
+    logRequest(levelName=logging.INFO, message=f"Dados recebidos: {request_data}")
+    data = {
+        "num_di" : str(request_data['num_di']),
+        "ref_ext" : request_data['ref_ext'],
+        "data_registro" : request_data['data_registro'],
+        "ptax" : str(request_data['PTAX']),
+        "valor_aduaneiro" : str(request_data["valor_aduaneiro"]),
+        "recinto_nome" : request_data['recinto'],
+        "tipo_mercadoria" : request_data['tipo_mercadoria'],
+        "conteineres" : request_data['conteineres']
+    }
+    try:
+        logRequest(levelName=logging.INFO, message=f"Gerando PDF")
+        generatePDF(data)
+    except Exception as e:
+        logRequest(levelName=logging.ERROR, message=f"Erro ao gerar PDF .\nError {e}.\nTrace : {str(traceback.format_exc())}")
+        return jsonify({"ERROR": f"Erro ao gerar PDF. Error {e}"},{"CODE_STATUS" : "PDF_ERROR"}), 400
 
-    '''    data = { 
-        "num_di" : "2304881172",
-        "ref_ext" : "OCCT14246/24",
-        "data_registro" : "25/11/2024",
-        "ptax" : "5,3412",
-        "valor_aduaneiro" : 1078625.85,
-        "recinto_nome" : "Portonave",
-        "tipo_mercadoria" : "Reefer",
-        "conteineres" : [
-            {
-                "seq" : 1, 
-                "numero" : "EMCU5465604",
-                "entrada" : "01/11/2024",
-                "tipo" : "Normal",
-                "saida" : "15/11/2024",
-                "servicos" : ["pesagem_conteiner"]
-            },
-            {
-                "seq" : 2,
-                "numero" : "EMCU5510323",
-                "entrada" : "01/11/2024",
-                "tipo" : "Carga Solta",
-                "saida" : "08/11/2024",
-                "servicos" : ["pesagem_conteiner"]
-            },
-            {
-                "seq" : 3,
-                "numero" : "EMCU5560237",
-                "entrada" : "01/11/2024",
-                "tipo" : "Normal",
-                "saida" : "08/11/2024",
-                "servicos" : ["pesagem_conteiner"]
-            },
-            {
-                "seq" : 4,
-                "numero" : "EMCU5701124",
-                "entrada" : "01/11/2024",
-                "tipo" : "Normal",
-                "saida" : "08/11/2024",
-                "servicos" : ["pesagem_conteiner","pos_vistoria"]
-            }
-            
-        ]   
-        
-    }'''
-    num_di = data['num_di']
-    ref_ext = data['ref_ext']
-    data_registro = data['data_registro']
-    ptax = data['ptax']
-    valor_aduaneiro = data["valor_aduaneiro"]
-    recinto_nome = data['recinto_nome']
-    tipo_mercadoria = data['tipo_mercadoria']
-    containeres = data['containeres']
-
-    generatePDF(data)
+    logRequest(levelName=logging.INFO, message=f"PDF Gerado com suceso")
     return send_file(f'{data["num_di"]}.pdf',as_attachment=True)
 if __name__ == '__main__':
 

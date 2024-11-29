@@ -1,9 +1,11 @@
 from asyncio import sleep
 from collections import Counter
+import logging
 import os
 from datetime import datetime
 from functools import reduce
 import time
+from utils.logger import logRequest
 from docx import Document
 from docx.shared import Pt
 from babel.numbers import format_currency
@@ -13,14 +15,14 @@ import re
 
 non_breaking_space = '\u00A0'
 
-def calcularValoresContainer(tipo_mercadoria : str,data_entrada : datetime,data_saida : datetime,recinto : dict,valor_cif : float,containeres : int, servicos : list, tipo_container : str):
+def calcularValoresContainer(tipo_mercadoria : str,data_entrada : datetime,data_saida : datetime,recinto : dict,valor_aduaneiro : float,containeres : int, servicos : list, tipo_container : str):
 # Expand = True descreve o valor pago por período
     armazenagem = calcularArmazenagem(
         tipo_mercadoria=tipo_mercadoria,
         entrada = data_entrada,
         saida=data_saida,
         recinto=recinto,
-        valor_cif=valor_cif,
+        valor_aduaneiro=valor_aduaneiro,
         conteineres=containeres,
         expand=True
     )
@@ -34,9 +36,9 @@ def calcularValoresContainer(tipo_mercadoria : str,data_entrada : datetime,data_
     return armazenagem, servicos, levante, energia
 
 # Defina value se o há apenas um valor, e listOfValues se for uma lista a ser concatenada com valor e descricao
-def formatarValoresDescritos(template : str ,seq : int, tipo : str, numero : str, entrada : str, saida : str, listOfValues : list):
+def formatarValoresDescritos(template : str ,sequence : int, tipo : str, numero : str, entrada : str, saida : str, listOfValues : list):
     lista_containeres = map(lambda valor : template.format( 
-        sequence=seq,
+        sequence=sequence,
         tipo=tipo,
         numero=numero,
         entrada=entrada,
@@ -47,8 +49,8 @@ def formatarValoresDescritos(template : str ,seq : int, tipo : str, numero : str
     texto_formatado = ''.join(lista_containeres)
     return texto_formatado
 
-def formatarValoresLevante(template : str, seq : int, tipo : str, numero : str, entrada : str, saida : str, value : float):
-    texto_formatado = template.format(sequence=seq,
+def formatarValoresLevante(template : str, sequence : int, tipo : str, numero : str, entrada : str, saida : str, value : float):
+    texto_formatado = template.format(sequence=sequence,
         tipo=tipo,
         numero=numero,
         entrada=entrada,
@@ -57,14 +59,14 @@ def formatarValoresLevante(template : str, seq : int, tipo : str, numero : str, 
         descricao= "")+'\n'
     return texto_formatado
 
-def formatarValoresServicos(template : str, seq : int, tipo : str, numero : str, entrada : str, saida : str, servicos : dict):
+def formatarValoresServicos(template : str, sequence : int, tipo : str, numero : str, entrada : str, saida : str, servicos : dict):
     # Agrupar todos os servicos em uma lista contendo o formato a baixo
     listServicos = {}
         # { "nome_servico" : nome, "texto" : texto_formatado}
     
     itemsServicos = servicos.items()
     for servico in itemsServicos:
-        texto_formatado = template.format(sequence=seq,
+        texto_formatado = template.format(sequence=sequence,
             tipo=tipo,
             numero=numero,
             entrada=entrada,
@@ -102,7 +104,7 @@ def generateKeyWords(data = None):
     texto_template = "{sequence} "+tab+"{tipo} "+tab+"{numero}"+tab+tab+"{entrada}"+tab+"{saida}"+tab+"{valor}"+tab+"{descricao}" 
 
 
-    valor_cif = float(data["valor_aduaneiro"])
+    valor_aduaneiro = float(data["valor_aduaneiro"])
     for container in containeres:
         data_entrada = datetime.strptime(container["entrada"], '%d/%m/%Y')
         data_saida = datetime.strptime(container["saida"], '%d/%m/%Y')
@@ -112,7 +114,7 @@ def generateKeyWords(data = None):
                                                                   data_entrada=data_entrada,
                                                                   data_saida=data_saida,
                                                                   recinto=recinto,
-                                                                  valor_cif=valor_cif,
+                                                                  valor_aduaneiro=valor_aduaneiro,
                                                                   containeres=containeres,
                                                                   servicos=container["servicos"],
                                                                   tipo_container=container["tipo"])
@@ -121,7 +123,7 @@ def generateKeyWords(data = None):
         
         texto_armazenagem += formatarValoresDescritos(
             template=texto_template,
-            seq=container["seq"],
+            sequence=container["sequence"],
             tipo=container["tipo"],
             numero=container["numero"],
             entrada=container["entrada"],
@@ -131,7 +133,7 @@ def generateKeyWords(data = None):
 
         texto_levante += formatarValoresLevante(
             template=texto_template,
-            seq=container["seq"],
+            sequence=container["sequence"],
             tipo=container["tipo"],
             numero=container["numero"],
             entrada=container["entrada"],
@@ -140,7 +142,7 @@ def generateKeyWords(data = None):
 
         servicos_formatados = formatarValoresServicos(
                 template=texto_template,
-                seq=container["seq"],
+                sequence=container["sequence"],
                 tipo=container["tipo"],
                 numero=container["numero"],
                 entrada=container["entrada"],
@@ -151,7 +153,7 @@ def generateKeyWords(data = None):
         if( len(energia) > 0 ):
             texto_energia += formatarValoresDescritos(
             template=texto_template,
-            seq=container["seq"],
+            sequence=container["sequence"],
             tipo=container["tipo"],
             numero=container["numero"],
             entrada=container["entrada"],
@@ -166,14 +168,14 @@ def generateKeyWords(data = None):
         # Concatena servicos formatados
         for servico in servicos_formatados.items():
             lista_servicos[servico[0]] = lista_servicos.get(servico[0],"") + servico[1]
-
-    formated_num_di = data['num_di'][:2]+"/"+data['num_di'][2:-1]+'-'+data['num_di'][-1:]
+    num_di = str(data['num_di'])
+    formated_num_di = num_di[:2]+"/"+num_di[2:-1]+'-'+num_di[-1:]
     # Qualquer chave que for igual a uma tag no DOCX sera substituida. Caso seja necessário um comportamento especial, é necessário fazer uma chave específica
     return {
     "NUM_DI" :  formated_num_di,
     "REF_EXT" :  data['ref_ext'],
     "DATA_REGISTRO" :  data['data_registro'],
-    "PTAX" :  data['ptax'],
+    "PTAX" :  str(data['ptax']),
     "VA" :  format_currency(data['valor_aduaneiro'],"BRL", locale="pt_BR"),
     "TIPO_MERCADORIA" :  data['tipo_mercadoria'],
     "RECINTO" :  data['recinto_nome'],
@@ -204,6 +206,7 @@ def replaceKeyWords(document, keywords = {}):
         texto_paragrafo = paragraph.text
         
         if(key_regex.search(texto_paragrafo)):
+            logRequest(levelName=logging.INFO, message=texto_paragrafo)
             new_paragraph = key_regex.sub(lambda m: replace_match(m,keywords),texto_paragrafo)
             paragraph.text = new_paragraph
             #paragraph.font = paragraph_font
@@ -261,53 +264,6 @@ document = templateLoad()
 
 
 def generatePDF(data):
-    '''
-    data = {
-        "num_di" : "2304881172",
-        "ref_ext" : "OCCT14246/24",
-        "data_registro" : "25/11/2024",
-        "ptax" : "5,3412",
-        "valor_aduaneiro" : 1078625.85,
-        "recinto_nome" : "Portonave",
-        "tipo_mercadoria" : "Reefer",
-        "conteineres" : [
-            {
-                "seq" : 1, 
-                "numero" : "EMCU5465604",
-                "entrada" : "01/11/2024",
-                "tipo" : "Normal",
-                "saida" : "15/11/2024",
-                "servicos" : ["pesagem_conteiner"]
-            },
-            {
-                "seq" : 2,
-                "numero" : "EMCU5510323",
-                "entrada" : "01/11/2024",
-                "tipo" : "Carga Solta",
-                "saida" : "08/11/2024",
-                "servicos" : ["pesagem_conteiner"]
-            },
-            {
-                "seq" : 3,
-                "numero" : "EMCU5560237",
-                "entrada" : "01/11/2024",
-                "tipo" : "Normal",
-                "saida" : "08/11/2024",
-                "servicos" : ["pesagem_conteiner"]
-            },
-            {
-                "seq" : 4,
-                "numero" : "EMCU5701124",
-                "entrada" : "01/11/2024",
-                "tipo" : "Normal",
-                "saida" : "08/11/2024",
-                "servicos" : ["pesagem_conteiner","pos_vistoria"]
-            }
-            
-        ]   
-        
-    }'''
-
     keywords = generateKeyWords(data)
 
     replaceKeyWords(document=document, keywords=keywords)

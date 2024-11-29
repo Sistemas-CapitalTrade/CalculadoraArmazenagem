@@ -28,15 +28,20 @@ export function DatePicker({
 } : PickerProps) {
   const [date, setDate] = React.useState<Date>()
   const [stringDate, setStringDate] = React.useState<string>("")
-  const [errorMessage, setErrorMessage] = React.useState<string>("")
 
   React.useEffect(()=>{
       if(initialValue){
-        setDate(initialValue)
-        setStringDate(format(initialValue, "dd/MM/yyyy")); // Set initial string date
+      setDate(initialValue)
+      setStringDate(format(initialValue, "dd/MM/yyyy")); // Set initial string date
       }
     },[initialValue]
   )
+  
+  React.useEffect(()=>{
+    
+  },[stringDate]
+  )
+
 
 
   return (
@@ -46,44 +51,40 @@ export function DatePicker({
           type="string"
           value={stringDate}
           className={`w-full h-12 justify-start bg-white text-black p-4 text-left font-normal rounded-lg text-sm ${error ? 'border-2 border-rose-400' : ''}`}
-          mask="XX/XX/XX__"
+          mask="XX/XX/XXXX"
           
           replacement={{
             'X': /[0-9]/, // Matches any digit (0-9)
             '_': /[0-9]?/, // Matches any digit (0-9) for the year
           }}
           onChange={(e) => {
-            //setStringDate(e.target.value)
-            const parsedDate = parse(e.target.value,"dd/MM/yyyy", new Date()) 
+            setStringDate(e.target.value)
+          }}  
+          onBlur={(e) => {
+
+            const parsedDate = parse(stringDate,"dd/MM/yyyy", new Date()) 
             console.log(parsedDate)
 
             if (parsedDate.toString() === "Invalid Date") {
-              setStringDate(e.target.value)
-              setErrorMessage("Data inválida")
               setDate(undefined)
             } else {
-              setStringDate(e.target.value)
-              setErrorMessage("")
               setDate(parsedDate)
+              setStringDate(e.target.value)
               selectValue(parsedDate)
-            }
+            } 
           }}
-        />
-        {errorMessage !== "" && (
-          <div className="absolute bottom-[-1.75rem] left-0 text-red-400 text-sm">
-            {errorMessage}
-          </div>
-        )}
+        ></InputMask>
         <PopoverTrigger asChild>
           <Button
             variant={"outline"}
             className={cn(
-              "text-muted-foreground font-normal absolute right-2 translate-y-[-50%] top-[50%]"
+              "text-muted-foreground font-normal right-2 absolute top-1"
             )}
           >
             <CalendarIcon className="w-4 h-4" />
           </Button>
         </PopoverTrigger>
+        { error ? <span className="text-sm font-inter text-rose-400">Campo Obrigatorio</span> : null}
       </div>
       <PopoverContent className="w-auto p-0">
         <Calendar
@@ -94,7 +95,6 @@ export function DatePicker({
             setDate(selectedDate)
             setStringDate(format(selectedDate, "dd/MM/yyyy"))
             selectValue(selectedDate)
-            setErrorMessage("")
           }}
           defaultMonth={date}
           initialFocus

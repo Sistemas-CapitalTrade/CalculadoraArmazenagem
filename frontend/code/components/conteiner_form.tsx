@@ -6,14 +6,13 @@ import CurrencyInput from "./form_field/currency_input";
 import ConteinerTAG from "./conteiner";
 import Checkbox from "./form_field/checkbox";
 import { DefaultGetFetch, fetchInputForm } from "../data/model_fetch";
-import { format } from "date-fns";
+import { format, parse } from "date-fns";
 import { Conteiner,InputLabelForm } from "@/data/types";
 import { Loader2 } from "lucide-react";
 import { Button } from "./ui/button";
 import LoadingWindow from "./ui/loading";
 import ErrorWindow from "./ui/error";
 import { DatePicker } from "./form_field/datepicker";
-import { NumericFormat } from "react-number-format";
 
 type FormProp = {
   returnRecinto : (recinto_name : string) => void 
@@ -31,7 +30,7 @@ export default function Form({
   const [num_di,setNumDI] = useState<string>("")
   const [PTAX,setPTAX] = useState<number>(0)
   const [data_registro,setDataRegistro] = useState<Date | null>(null)
-  const [CIF, setCIF] = useState<number>()
+  const [valor_aduaneiro, setValorAduaneiro] = useState<number>()
   const [conteinerList,setConteinerList] = useState<Conteiner[]>([])
   const [custoObrigatorio, setCustoObrigatorio] = useState<InputLabelForm[]>([])
   const [custoObrigatorioMarcado, setCustoObrigatorioMarcado] = useState<InputLabelForm[]>([])
@@ -43,7 +42,7 @@ export default function Form({
   const [formErrors, setFormErrors] = useState<{[key: string]: boolean}>({});
   const recintoRef = useRef<HTMLButtonElement>(null);
   const tipoMercadoriaRef = useRef<HTMLButtonElement>(null);
-  const cifRef = useRef<HTMLInputElement>(null);
+  const valorAduaneiroRef = useRef<HTMLInputElement>(null);
   const codExtRef = useRef<HTMLInputElement>(null);
   const codNumDI = useRef<HTMLInputElement>(null);
   const PTAXRef = useRef<HTMLInputElement>(null)
@@ -54,7 +53,9 @@ export default function Form({
   const [valorEnergia,setValorEnergia] = useState<number>(0)
   const [valorTotal,setValorTotal] = useState<number>(0)
   const [isLoadingSubmit,setIsLoadingSubmit] = useState<boolean>(false)
+  const [isLoadingPDF,setIsLoadingPDF] = useState<boolean>(false)
   const [buildRepportError,setBuildRepportError] = useState<boolean>(false)
+  const [pdfRepportError,setPDFRepportError] = useState<boolean>(false)
   const [repportGenerated,setRepportGenerated] = useState<boolean>(false)
   /*const [tabelaNegociada,setTabelaNegociada] = useState<InputLabelForm>({
     id : "tabela_negociada",
@@ -230,7 +231,7 @@ export default function Form({
 
   function handleRecintoSelection(valor:any) {
     setRecinto(() => valor)
-
+    setSequence(0)
     if(valor == ''){
       setConteinerList([])
       setPeriodosRecinto({})
@@ -274,8 +275,8 @@ export default function Form({
     
   }
 
-  const handleCIF = (cif : any) => {
-    setCIF(cif)
+  const handleValorAduaneiro = (valor_aduaneiro : any) => {
+    setValorAduaneiro(valor_aduaneiro)
   }
   
   function validateForm(){
@@ -285,8 +286,10 @@ export default function Form({
     if (!recinto) newFormErrors.recinto = true;
     if (!ref_ext) newFormErrors.ref_ext = true;
     if (!tipo_mercadoria) newFormErrors.tipo_mercadoria = true;
-    if (!CIF) newFormErrors.CIF = true;
+    if (!valor_aduaneiro) newFormErrors.valor_aduaneiro = true;
     if (!num_di) newFormErrors.num_di = true;
+    if (!PTAX) newFormErrors.PTAX = true;
+    if (!data_registro) newFormErrors.data_registro = true;
 
     const conteinerListCopy = [...conteinerList]
 
@@ -317,6 +320,7 @@ export default function Form({
       {
         id : conteiner.id,
         sequence : conteiner.sequence,
+        numero : conteiner.numero,
         tipo : conteiner.tipo_conteiner,
         saida : format((conteiner as any).saida, 'dd/MM/yyyy'),
         entrada : format((conteiner as any).entrada, 'dd/MM/yyyy'),
@@ -330,8 +334,11 @@ export default function Form({
       const dataToSend = {
         recinto : recinto,
         ref_ext : ref_ext,
+        num_di : num_di,
+        PTAX : PTAX,
+        data_registro : data_registro,
         tipo_mercadoria : tipo_mercadoria,
-        cif : CIF,
+        valor_aduaneiro : valor_aduaneiro,
         custos_obrigatorios : custoObrigatorioMarcado.map(value => value.id),
         conteineres : conteinerSendData
     };
@@ -400,6 +407,64 @@ export default function Form({
     });
   };
 
+  function handlePDFGeneration(){
+    
+    const validation = validateForm()
+    if(!validation)
+      return
+    // Marcar que o relatório está sendo gerado
+    setIsLoadingPDF(true)
+    setPDFRepportError(false)
+    
+    const dataToSend = createFormObject()
+    // Send the data to the backend
+    fetch(`${API_URL}:${API_PORT}/sendPDF`, {
+      method: 'POST',
+      headers: {
+          'Content-Type': 'application/json',
+      },
+      body: JSON.stringify(dataToSend),
+  })
+  .then(response => {
+
+
+    console.log(response)
+    if (!response.ok) {
+      return response.json().then(errData => {
+        throw new Error(errData.error || 'Unknown error occurred');
+    });
+    }
+    return response.blob();
+  })
+  .then(data => {
+
+    // Marcar que o relatório está sendo gerado
+    setIsLoadingPDF(false)
+    setPDFRepportError(false)
+    console.log('Success');
+    var file = window.URL.createObjectURL(data);// Create a temporary <a> element
+    var a = document.createElement('a');
+    a.href = file;
+    a.download = `${num_di}.pdf`; // Suggest a filename (e.g., file.pdf)
+    document.body.appendChild(a); // Append the element to the DOM
+    a.click(); // Trigger the download
+    document.body.removeChild(a); // Remove the element after download
+  
+    // Revoke the object URL to release memory
+    window.URL.revokeObjectURL(file);
+    
+  })
+  .catch(error => {
+    // Marcar que o relatório está sendo gerado
+    setIsLoadingPDF(false)
+    setPDFRepportError(true)
+    console.error('Error:', error.message);
+
+      // Handle error (e.g., show an error message)
+  });
+
+  }
+
   function handleCodExt(valor : string) {
     setCodExt( () => valor)
   }
@@ -434,7 +499,6 @@ export default function Form({
       const processo = recintoList.filter(x => x.id == data.RECINTO_COD).at(0)
       if(processo){
         handleRecintoSelection(processo.label)
-        console.log(num_di)
         setNumDI(() => data.CD_DI)
 
         const dataRegistroDate = new Date(data.DATA_REGISTRO)
@@ -443,23 +507,23 @@ export default function Form({
         
         setPTAX(() => data.PTAX)
 
-        setCIF(() => data.VALOR_CIF )
+        setValorAduaneiro(() => data.VALOR_ADUANEIRO )
 
         setTipoMercadoria( () => data.TIPO_MERCADORIA )
 
         const conteinersData = JSON.parse(data.CONTAINERES)
-        setSequence(conteinersData.length - 1)
+        setSequence(conteinersData.length)
         setConteinerList( () => conteinersData.map((x : any,index : number) => {
 
             return {
               
               id : x.num_container,
               numero : x.num_container,
-              sequence : index,
+              sequence : index + 1,
               tipo_conteiner : x.tipo_container,
-              entrada : null,
-              saida : null,
-              periodo : "",
+              entrada : x.entrada ? parse(x.entrada,"dd/MM/yyyy",new Date()) : "", // Caso entrada ou saida estejam vazias, colocar uma string nula
+              saida : x.saida ? parse(x.saida,"dd/MM/yyyy",new Date()) : "",
+              periodo : "", // Periodo vazio vai ser calculado quando entrar no component de Conteiner
               servicos : []
             }
           })
@@ -524,10 +588,10 @@ export default function Form({
           <div className="">
             <CurrencyInput
               name="Valor Aduaneiro"
-              initialValue={CIF}
-              ref={cifRef}
-              error={formErrors.CIF}
-              returnValor={handleCIF}
+              initialValue={valor_aduaneiro}
+              ref={valorAduaneiroRef}
+              error={formErrors.valor_aduaneiro}
+              returnValor={handleValorAduaneiro}
             />  
           </div>
           <div className="">
@@ -616,7 +680,7 @@ export default function Form({
         })} 
 
       </div>
-
+      <h3 className="mt-4 font-light font-inter text-md text-red-500">{" Os campos acimas podem estar incorretos dependendo do preenchimento deles no Conexos. Favor, conferir os campos antes de prosseguir"}</h3>
       <div className="mt-24 space-x-4 flex w-full">
         {/* <input type="submit" className=" bg-orange-700 bg-opacity-80 hover:bg-opacity-60 transition-opacity rounded-xl text-white text-lg py-3 px-6" value="Simular"/> */}
         <Button 
@@ -639,18 +703,18 @@ export default function Form({
 
           <Button 
           type="button" 
-          onClick={handleSubmit} 
-          className={` bg-orange-700 bg-opacity-80 hover:bg-opacity-60 transition-opacity rounded-xl text-white font-inter text-lg h-12 ${isLoadingSubmit ? "w-50" : "w-24"}`} 
+          onClick={handlePDFGeneration} 
+          className={` bg-orange-700 bg-opacity-80 hover:bg-opacity-60 transition-opacity rounded-xl text-white font-inter text-lg h-12 ${isLoadingPDF ? "w-50" : "w-24"}`} 
           >
             {
-              isLoadingSubmit 
+              isLoadingPDF 
               ?
                 <>
                   <span className="h-min w-min">Carregando</span>
                   <Loader2 className="mr-2 h-4 w-4 animate-spin" />                
                 </>
                 :
-                  "Simular"
+                  "Gerar PDF"
             }
             
           </Button>
@@ -661,6 +725,16 @@ export default function Form({
             :
             <></>
           }
+          
+          {
+            pdfRepportError 
+            ?
+              <h1 className="ml-4 text-lg font-inter font-semibold text-rose-500">Erro ao baixar PDF. Por favor, contate a equipe de sistemas.</h1>
+            :
+            <></>
+          }
+
+          
 
           {
             repportGenerated 
