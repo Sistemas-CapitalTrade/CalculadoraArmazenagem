@@ -71,7 +71,6 @@ export default function Form({
   const refToValuesCalculated = useRef<HTMLDivElement | null>(null)
 
   const API_URL = process.env.NEXT_PUBLIC_API_URL
-  const API_PORT = process.env.NEXT_PUBLIC_API_PORT
 
   const realFormatter = new Intl.NumberFormat("pt-BR", {
     style : "currency",
@@ -82,7 +81,7 @@ export default function Form({
   })
 
   useLayoutEffect( ()=> {
-    fetchInputForm(`${API_URL}:${API_PORT}/recintos/infos`)
+    fetchInputForm(`${API_URL}/recintos/infos`)
     .then(recintoInfo => {
       setRecintoList(() => recintoInfo)
       }
@@ -92,7 +91,7 @@ export default function Form({
       }
     )
 
-    fetchInputForm(`${API_URL}:${API_PORT}/data/tipo/mercadoria`)
+    fetchInputForm(`${API_URL}/data/tipo/mercadoria`)
     .then(list => {
       setTipoMercadoriaList(() => list)
       }
@@ -103,7 +102,7 @@ export default function Form({
     )
 
     
-    fetchInputForm(`${API_URL}:${API_PORT}/data/tipo/conteiner`)
+    fetchInputForm(`${API_URL}/data/tipo/conteiner`)
     .then(list => {
       setTipoConteinerList(() => list)
       }
@@ -242,7 +241,7 @@ export default function Form({
     }
     returnRecinto(valor)
     setConteinerList([])
-    DefaultGetFetch(`${API_URL}:${API_PORT}/recintos/${valor}/periodo`)
+    DefaultGetFetch(`${API_URL}/recintos/${valor}/periodo`)
     .then(object => {
       setPeriodosRecinto(() => object)
       }
@@ -252,7 +251,7 @@ export default function Form({
       }
     )
     
-    fetchInputForm(`${API_URL}:${API_PORT}/recintos/${valor}/custosConteiner`)
+    fetchInputForm(`${API_URL}/recintos/${valor}/custosConteiner`)
       .then(list => {
         setCustoConteiner(() => list)
       }
@@ -262,7 +261,7 @@ export default function Form({
       }
     )
     
-    fetchInputForm(`${API_URL}:${API_PORT}/recintos/${valor}/custosObrigatorios`)
+    fetchInputForm(`${API_URL}/recintos/${valor}/custosObrigatorios`)
       .then(list => {
         setCustoObrigatorio(() => [...list])
         setCustoObrigatorioMarcado(() => [...list])
@@ -356,7 +355,7 @@ export default function Form({
     
     const dataToSend = createFormObject()
     // Send the data to the backend
-    fetch(`${API_URL}:${API_PORT}/calc`, {
+    fetch(`${API_URL}/calc`, {
         method: 'POST',
         headers: {
             'Content-Type': 'application/json',
@@ -419,7 +418,7 @@ export default function Form({
     const dataToSend = createFormObject()
     console.log(dataToSend)
     // Send the data to the backend
-    fetch(`${API_URL}:${API_PORT}/sendPDF`, {
+    fetch(`${API_URL}/sendPDF`, {
       method: 'POST',
       headers: {
           'Content-Type': 'application/json',
@@ -484,7 +483,7 @@ export default function Form({
   function searchRefExt(){
     // Mostrar tela de carregando
     setIsLoadingSearch(true)
-    fetch(`${API_URL}:${API_PORT}/refExt/${ref_ext?.replaceAll("/","")}`)
+    fetch(`${API_URL}/refExt/${ref_ext?.replaceAll("/","")}`)
     .then( result => {
       if (!result.ok) 
       {

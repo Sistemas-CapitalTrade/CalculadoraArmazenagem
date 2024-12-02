@@ -10,7 +10,6 @@ import SidePanel from "./side_bar/side_panel";
 import { ConfigRenderer } from "./config_page/config_page_renderer";
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL
-const API_PORT = process.env.NEXT_PUBLIC_API_PORT
 
 
 const defaultPeriodos : Periodos = {
@@ -174,7 +173,7 @@ export default function Config() {
     ]
 
     useLayoutEffect( () => {
-        fetchInputForm(`${API_URL}:${API_PORT}/recintos/infos`)
+        fetchInputForm(`${API_URL}/recintos/infos`)
         .then((list : any) => {
             setRecintoList(() => list)
             }
@@ -184,7 +183,7 @@ export default function Config() {
             }
         )
         
-        DefaultGetFetch(`${API_URL}:${API_PORT}/data/tipo/conteiner`)
+        DefaultGetFetch(`${API_URL}/data/tipo/conteiner`)
         .then((list : any) => {
             if(list)
                 setTipoConteinerList(() => list)
@@ -192,7 +191,7 @@ export default function Config() {
         ) 
 
         
-        DefaultGetFetch(`${API_URL}:${API_PORT}/data/tipo/mercadoria`)
+        DefaultGetFetch(`${API_URL}/data/tipo/mercadoria`)
         .then((list : any) => {
             if(list)
                 setTipoMercadoriaList(() => list)
@@ -205,7 +204,7 @@ export default function Config() {
         setRecinto(recinto_selected)
 
         if(!insertMode)
-            DefaultGetFetch(`${API_URL}:${API_PORT}/recinto/${recinto_selected}/info`)
+            DefaultGetFetch(`${API_URL}/recinto/${recinto_selected}/info`)
             .then( (data : RecintoInfoType) => {
                 setRecintoInfo(data)
                 console.log(data)
@@ -226,7 +225,7 @@ export default function Config() {
         if(confirmation){
 
             const queryParams = new URLSearchParams({nome : recinto})
-            fetch(`${API_URL}:${API_PORT}/recinto?${queryParams}`,{
+            fetch(`${API_URL}/recinto?${queryParams}`,{
                 method :"DELETE"
             })
             .then(response => {
@@ -267,7 +266,7 @@ export default function Config() {
             [recinto] : recintoInfo
         }
 
-        fetch(`${API_URL}:${API_PORT}/recinto`,{
+        fetch(`${API_URL}/recinto`,{
             method : "POST",
             headers: {
                 'Content-Type': 'application/json',
