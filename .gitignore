@@ -6,3 +6,7 @@
 
 # Any log files
 backend/code/logs/*
+
+#Any venv folders
+**/.venv*
+
