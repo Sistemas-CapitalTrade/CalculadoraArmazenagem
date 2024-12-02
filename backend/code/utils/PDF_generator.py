@@ -89,6 +89,7 @@ def generateKeyWords(data = None):
     #Pega o recinto do modelo que foi passado
     recinto = recintos[data["recinto_nome"]]
     containeres = data["conteineres"]
+    custo_obrigatorio = data['custo_obrigatorio']
 
     texto_armazenagem = ""
     lista_servicos = {}
@@ -109,14 +110,16 @@ def generateKeyWords(data = None):
         data_entrada = datetime.strptime(container["entrada"], '%d/%m/%Y')
         data_saida = datetime.strptime(container["saida"], '%d/%m/%Y')
         tipo_mercadoria = data["tipo_mercadoria"]
-    
+
+        servicos_input = custo_obrigatorio + container['servicos']
+
         armazenagem, servicos, levante, energia = calcularValoresContainer(tipo_mercadoria=tipo_mercadoria,
                                                                   data_entrada=data_entrada,
                                                                   data_saida=data_saida,
                                                                   recinto=recinto,
                                                                   valor_aduaneiro=valor_aduaneiro,
                                                                   containeres=containeres,
-                                                                  servicos=container["servicos"],
+                                                                  servicos=servicos_input,
                                                                   tipo_container=container["tipo"])
        
         
@@ -149,6 +152,7 @@ def generateKeyWords(data = None):
                 saida=container["saida"],
                 servicos=servicos
             ) 
+        
         
         if( len(energia) > 0 ):
             texto_energia += formatarValoresDescritos(
@@ -213,6 +217,7 @@ def replaceKeyWords(document, keywords = {}):
         
         if ("{{{energia}}}" in texto_paragrafo):
             if(len(keywords["containers_energia"]) > 0):
+                logRequest(levelName=logging.INFO, message=texto_paragrafo)
                 titulo_paragraph = paragraph.insert_paragraph_before()
                 titulo_text = titulo_paragraph.add_run(
                     "Energia"
@@ -241,6 +246,7 @@ def replaceKeyWords(document, keywords = {}):
 
         # Get the servico containers template, add the services and then clean it
         if("{{{servicos}}}" in texto_paragrafo):
+            logRequest(levelName=logging.INFO, message=texto_paragrafo)
             for servico in keywords["lista_servicos"].items():
                 titulo_paragraph = paragraph.insert_paragraph_before()
                 titulo_text = titulo_paragraph.add_run(
@@ -260,10 +266,10 @@ def replaceKeyWords(document, keywords = {}):
             paragraph.text = None
 
 
-document = templateLoad()
 
 
 def generatePDF(data):
+    document = templateLoad()
     keywords = generateKeyWords(data)
 
     replaceKeyWords(document=document, keywords=keywords)

@@ -1,6 +1,7 @@
 from datetime import datetime
 import json
 from copy import deepcopy
+import os
 from flask import Flask, jsonify, request, redirect, send_file, g
 from flask_cors import CORS, cross_origin
 from collections import Counter
@@ -322,7 +323,8 @@ def PDF():
         "valor_aduaneiro" : str(request_data["valor_aduaneiro"]),
         "recinto_nome" : request_data['recinto'],
         "tipo_mercadoria" : request_data['tipo_mercadoria'],
-        "conteineres" : request_data['conteineres']
+        "conteineres" : request_data['conteineres'],
+        "custo_obrigatorio" : request_data['custos_obrigatorios']
     }
     try:
         logRequest(levelName=logging.INFO, message=f"Gerando PDF")
@@ -332,7 +334,15 @@ def PDF():
         return jsonify({"ERROR": f"Erro ao gerar PDF. Error {e}"},{"CODE_STATUS" : "PDF_ERROR"}), 400
 
     logRequest(levelName=logging.INFO, message=f"PDF Gerado com suceso")
-    return send_file(f'{data["num_di"]}.pdf',as_attachment=True)
+    fileToSend = send_file(f'{data["num_di"]}.pdf',as_attachment=True)
+    
+    # Tentativa de remover arquivo antes de retona-lo
+    try:
+        os.remove(f'{data["num_di"]}.pdf')
+    except:
+        return jsonify({"ERROR": f"PDF Gerado porém não foi possível remove-lo. Error {e}"},{"CODE_STATUS" : "PDF_REMOVAL_ERROR"}), 400
+    
+    return fileToSend
 if __name__ == '__main__':
 
     recintos = loadRecintos()

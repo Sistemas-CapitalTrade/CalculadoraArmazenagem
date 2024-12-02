@@ -417,6 +417,7 @@ export default function Form({
     setPDFRepportError(false)
     
     const dataToSend = createFormObject()
+    console.log(dataToSend)
     // Send the data to the backend
     fetch(`${API_URL}:${API_PORT}/sendPDF`, {
       method: 'POST',
@@ -442,8 +443,8 @@ export default function Form({
     setIsLoadingPDF(false)
     setPDFRepportError(false)
     console.log('Success');
-    var file = window.URL.createObjectURL(data);// Create a temporary <a> element
-    var a = document.createElement('a');
+    const file = window.URL.createObjectURL(data);// Create a temporary <a> element
+    const a = document.createElement('a');
     a.href = file;
     a.download = `${num_di}.pdf`; // Suggest a filename (e.g., file.pdf)
     document.body.appendChild(a); // Append the element to the DOM
