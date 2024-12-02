@@ -174,11 +174,13 @@ def generateKeyWords(data = None):
             lista_servicos[servico[0]] = lista_servicos.get(servico[0],"") + servico[1]
     num_di = str(data['num_di'])
     formated_num_di = num_di[:2]+"/"+num_di[2:-1]+'-'+num_di[-1:]
+    datetime_data_registro = datetime.strptime(str(data['data_registro']),"%Y-%m-%dT00:00:00.000Z")
+    str_data_registro = datetime_data_registro.strftime("%d/%m/%y")
     # Qualquer chave que for igual a uma tag no DOCX sera substituida. Caso seja necessário um comportamento especial, é necessário fazer uma chave específica
     return {
     "NUM_DI" :  formated_num_di,
     "REF_EXT" :  data['ref_ext'],
-    "DATA_REGISTRO" :  data['data_registro'],
+    "DATA_REGISTRO" : str_data_registro,
     "PTAX" :  str(data['ptax']),
     "VA" :  format_currency(data['valor_aduaneiro'],"BRL", locale="pt_BR"),
     "TIPO_MERCADORIA" :  data['tipo_mercadoria'],
@@ -211,9 +213,21 @@ def replaceKeyWords(document, keywords = {}):
         
         if(key_regex.search(texto_paragrafo)):
             logRequest(levelName=logging.INFO, message=texto_paragrafo)
+            '''
+            text_replaced = key_regex.sub(lambda m: replace_match(m,keywords),texto_paragrafo)
+            new_paragraph = paragraph.insert_paragraph_before()
+            new_paragraph_text = new_paragraph.add_run(
+                text_replaced
+            )
+            new_paragraph_text.font.size = Pt(10)
+            new_paragraph.paragraph_format.left_indent = -540385
+            #paragraph.font = paragraph_font
+            paragraph.text = None
+            '''
             new_paragraph = key_regex.sub(lambda m: replace_match(m,keywords),texto_paragrafo)
             paragraph.text = new_paragraph
-            #paragraph.font = paragraph_font
+
+
         
         if ("{{{energia}}}" in texto_paragrafo):
             if(len(keywords["containers_energia"]) > 0):
@@ -232,7 +246,7 @@ def replaceKeyWords(document, keywords = {}):
                 )
                 containers_paragraph.paragraph_format.left_indent = -540385
                 containers_paragraph.paragraph_format.right_indent = -940385
-                containers_text.font.size = Pt(11)
+                containers_text.font.size = Pt(10)
             
             paragraph.text = None
         
@@ -261,7 +275,7 @@ def replaceKeyWords(document, keywords = {}):
                     servico[1]
                 )
                 containers_paragraph.paragraph_format.left_indent = -540385
-                containers_text.font.size = Pt(11)
+                containers_text.font.size = Pt(10)
             
             paragraph.text = None
 
@@ -274,9 +288,9 @@ def generatePDF(data):
 
     replaceKeyWords(document=document, keywords=keywords)
     num_di = data["num_di"]
-    document.save(f"./{num_di}.docx")
+    document.save(f"./Relatorio Descritivo da Cobrança {num_di}.docx")
     time.sleep(0.5)
-    os.system(f'libreoffice --headless --convert-to pdf {num_di}.docx')
+    os.system(f"libreoffice --headless --convert-to pdf 'Relatorio Descritivo da Cobrança {num_di}.docx'")
     time.sleep(0.2)
-    os.remove(f"{num_di}.docx")
+    os.remove(f"Relatorio Descritivo da Cobrança {num_di}.docx")
 

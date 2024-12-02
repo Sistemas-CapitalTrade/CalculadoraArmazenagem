@@ -8,7 +8,7 @@ networks:
 services:
   web:
     build: frontend/code/
-    command: npm run start
+    command: npm run dev
     networks:
      - net_calc
     ports:

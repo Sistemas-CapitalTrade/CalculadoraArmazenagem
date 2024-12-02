@@ -334,11 +334,11 @@ def PDF():
         return jsonify({"ERROR": f"Erro ao gerar PDF. Error {e}"},{"CODE_STATUS" : "PDF_ERROR"}), 400
 
     logRequest(levelName=logging.INFO, message=f"PDF Gerado com suceso")
-    fileToSend = send_file(f'{data["num_di"]}.pdf',as_attachment=True)
+    fileToSend = send_file(f'Relatorio Descritivo da Cobrança {data["num_di"]}.pdf',as_attachment=True)
     
     # Tentativa de remover arquivo antes de retona-lo
     try:
-        os.remove(f'{data["num_di"]}.pdf')
+        os.remove(f'Relatorio Descritivo da Cobrança {data["num_di"]}.pdf')
     except:
         return jsonify({"ERROR": f"PDF Gerado porém não foi possível remove-lo. Error {e}"},{"CODE_STATUS" : "PDF_REMOVAL_ERROR"}), 400
     
