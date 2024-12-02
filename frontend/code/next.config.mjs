@@ -1,9 +1,9 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
-    basePath : "/calculadora",
-    assetPrefix : "/calculadora",
+    basePath : "/faturamento/calculadora",
+    assetPrefix : "/faturamento/calculadora",
     env: {
-      NEXT_PUBLIC_ASSET_PREFIX: '/calculadora', // make assetPrefix available as an environment variable
+      NEXT_PUBLIC_ASSET_PREFIX: '/faturamento/calculadora', // make assetPrefix available as an environment variable
     },
 };
 
