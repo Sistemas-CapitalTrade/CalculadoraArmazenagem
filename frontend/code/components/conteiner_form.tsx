@@ -13,6 +13,7 @@ import { Button } from "./ui/button";
 import LoadingWindow from "./ui/loading";
 import ErrorWindow from "./ui/error";
 import { DatePicker } from "./form_field/datepicker";
+import { ToggleSlider } from "./form_field/switch";
 
 type FormProp = {
   returnRecinto : (recinto_name : string) => void 
@@ -44,7 +45,7 @@ export default function Form({
   const tipoMercadoriaRef = useRef<HTMLButtonElement>(null);
   const valorAduaneiroRef = useRef<HTMLInputElement>(null);
   const codExtRef = useRef<HTMLInputElement>(null);
-  const codNumDI = useRef<HTMLInputElement>(null);
+  const codNumDIRef = useRef<HTMLInputElement>(null);
   const PTAXRef = useRef<HTMLInputElement>(null)
   const [valorArmazenagem,setValorArmazenagem] = useState<number>(0)
   const [valorLevante,setValorLevante] = useState<number>(0)
@@ -445,7 +446,7 @@ export default function Form({
     const file = window.URL.createObjectURL(data);// Create a temporary <a> element
     const a = document.createElement('a');
     a.href = file;
-    a.download = `${num_di}.pdf`; // Suggest a filename (e.g., file.pdf)
+    a.download = `Relatorio Descritivo da Cobrança ${num_di}.pdf`; // Suggest a filename (e.g., file.pdf)
     document.body.appendChild(a); // Append the element to the DOM
     a.click(); // Trigger the download
     document.body.removeChild(a); // Remove the element after download
@@ -499,7 +500,9 @@ export default function Form({
       const processo = recintoList.filter(x => x.id == data.RECINTO_COD).at(0)
       if(processo){
         handleRecintoSelection(processo.label)
-        setNumDI(() => data.CD_DI)
+        const str_num_di = String(data.CD_DI)
+        //const num_di_formatted = str_num_di.slice(0,2) + '/' +str_num_di.slice(2,9) + "-" + str_num_di.slice(9,10)  
+        setNumDI(() => str_num_di)
 
         const dataRegistroDate = new Date(data.DATA_REGISTRO)
         // const dataRegistroFormatada = dataRegistroString.substring(0,dataRegistroString.indexOf('T')).replaceAll('-','/')        
@@ -544,6 +547,15 @@ export default function Form({
   }
 
 
+  function formatNumDi(valor_di : string){
+    const numero_di = valor_di.replace(/\D/g,'')
+    if(numero_di.length >= 10){
+      return numero_di.slice(0,2) + '/' +numero_di.slice(2,9) + "-" + numero_di.slice(9,10)  
+    }
+    return numero_di
+  }
+  
+  
   const searchRefExtButton = () => {
     return (
       <Button
@@ -557,6 +569,8 @@ export default function Form({
     )
   }
 
+  
+
 //<Checkbox input={} returnValue={} />
 
   return (
@@ -569,8 +583,21 @@ export default function Form({
           <InputForm currentValue={ref_ext} ref={codExtRef} error={formErrors.ref_ext} selectValue={handleCodExt} field = "ref_ext" name = "Referência Externa" trailingIcon={searchRefExtButton()}/>
         </div>
           
-        <InputForm currentValue={num_di} ref={codNumDI} error={formErrors.num_di} selectValue={handleNumDI} field = "num_di" name = "D.I" />
-          
+        <div className="">
+            <label className="block text-lg font-inter font-light">{"D.I"}</label>
+            <input
+              ref={codNumDIRef}
+              className={`flex bg-white h-12 p-2 text-black w-full font-inter rounded-md font-light justify-end ${formErrors.num_di ? 'border-2 border-rose-400' : ''}`}
+              value={formatNumDi(num_di)  }
+              
+              onChange={(e : any) => {
+                handleNumDI(e.target.value)
+              }}
+              placeholder="0/00000000-0"
+            type="text"
+            />
+          { formErrors.num_di ? <span className="text-sm font-inter text-rose-400">Campo obrigatório</span> : null}
+        </div>
           
 {/*             
             <div className="">
@@ -648,6 +675,9 @@ export default function Form({
         </div>
       </div>
 
+      <ToggleSlider
+      label="Usar tabela negociada?"
+      ></ToggleSlider>
       <h1 className="font-inter text-xl mt-12 mx-auto w-min text-nowrap font-bold">Custos adicionais</h1>
 
       <div id="custos_adicionais" className="grid w-full grid-cols-1 xl:grid-cols-3 mx-auto mt-12 gap-8 items-center">

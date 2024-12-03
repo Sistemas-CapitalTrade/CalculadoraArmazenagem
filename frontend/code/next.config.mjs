@@ -5,6 +5,7 @@ const nextConfig = {
     env: {
       NEXT_PUBLIC_ASSET_PREFIX: '/faturamento/calculadora', // make assetPrefix available as an environment variable
     },
+    output: "standalone",
 };
 
 export default nextConfig;
