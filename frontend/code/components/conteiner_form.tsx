@@ -13,7 +13,7 @@ import { Button } from "./ui/button";
 import LoadingWindow from "./ui/loading";
 import ErrorWindow from "./ui/error";
 import { DatePicker } from "./form_field/datepicker";
-import { ToggleSlider } from "./form_field/switch";
+import { Switch } from "./form_field/switch";
 
 type FormProp = {
   returnRecinto : (recinto_name : string) => void 
@@ -62,8 +62,8 @@ export default function Form({
     id : "tabela_negociada",
     label :  "Tabela Negociada"
   })
-  const [tabelaPublica,setTabelaPublica] = useState<boolean>(false)
   */
+  const [tabelaPublica,setTabelaPublica] = useState<boolean>(false)
   const [isLoadingSearch, setIsLoadingSearch] = useState<boolean>(false)
   const [isErrorSearch, setIsErrorSearch] = useState<boolean>(false)
   
@@ -336,6 +336,7 @@ export default function Form({
         ref_ext : ref_ext,
         num_di : num_di,
         PTAX : PTAX,
+        isTabelaPublica : tabelaPublica,
         data_registro : data_registro,
         tipo_mercadoria : tipo_mercadoria,
         valor_aduaneiro : valor_aduaneiro,
@@ -674,10 +675,21 @@ export default function Form({
 
         </div>
       </div>
+      <div className="h-12">
+        <label className="block text-lg font-inter font-light">Tipo de tabela</label>
 
-      <ToggleSlider
-      label="Usar tabela negociada?"
-      ></ToggleSlider>
+        <div className="my-auto flex space-x-4">
+          <Switch
+            checked={tabelaPublica} 
+            onCheckedChange={setTabelaPublica}
+            id="tipo_tabela"
+            className="my-auto"
+          />
+          <label className="my-auto text-lg text-orange-300 font-inter font-semibold" htmlFor="tipo_tabela">{tabelaPublica ? "Tabela Publica" : "Tabela Negociada"}</label>
+        </div>
+      </div>
+      
+      
       <h1 className="font-inter text-xl mt-12 mx-auto w-min text-nowrap font-bold">Custos adicionais</h1>
 
       <div id="custos_adicionais" className="grid w-full grid-cols-1 xl:grid-cols-3 mx-auto mt-12 gap-8 items-center">
@@ -693,7 +705,7 @@ export default function Form({
       
       </div>
 
-      {formErrors.conteinerList ? <span className="text-rose-400">É necessário incluir conteineres</span> : null}
+      {formErrors.conteinerList ? <span className="text-rose-400">É necessáriob incluir conteineres</span> : null}
 
       <div id="conteiners_form" className="grid gap-x-10 gap-y-4 mt-12 grid-cols-14 w-full font-inter font-semibold text-lg">
 
